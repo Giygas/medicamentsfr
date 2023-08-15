@@ -54,9 +54,10 @@ func main() {
 	
 	wg.Wait()
 	
-	conditions := conditionFileToJSON()
-
-	fmt.Println(conditions)
+	medicaments := parseAllMedicaments()
+	
+	fmt.Println(medicaments[0])
+	
 	timeElapsed := time.Since(start)
 	fmt.Printf("The full database upgrade took: %s", timeElapsed)
 	fmt.Println()
