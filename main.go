@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+
 var files = map[string]string {
 	"Specialites": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_bdpm.txt",
 	"Presentations": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CIP_bdpm.txt",
@@ -31,7 +32,7 @@ func main() {
 	}
 	
 	//Download all the files and convert from windows 1252 to utf8
-	downloadAndParseAll(files)
+	// downloadAndParseAll(files)
 	
 	//Pass only the names of the files to the function
 	var filesNames []string
@@ -53,6 +54,9 @@ func main() {
 	
 	wg.Wait()
 	
+	conditions := conditionFileToJSON()
+
+	fmt.Println(conditions)
 	timeElapsed := time.Since(start)
 	fmt.Printf("The full database upgrade took: %s", timeElapsed)
 	fmt.Println()

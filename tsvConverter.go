@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"medicamentsfr/entities"
 	"os"
 	"strconv"
 	"strings"
@@ -15,19 +16,7 @@ import (
 
 func makePresentations(wg *sync.WaitGroup) {
 	defer wg.Done()
-	type Presentation struct {
-		Cis 										int			`json:"cis"`
-		Cip7 										int			`json:"cip7"`
-		Libelle 								string	`json:"libelle"`
-		StatusAdministratif 		string	`json:"statusAdministratif"`
-		EtatComercialisation 		string	`json:"etatComercialisation"`
-		DateDeclaration 				string	`json:"dateDeclaration"`
-		Cip13 									int			`json:"cip13"`
-		Agreement 							string	`json:"agreement"`
-		TauxRemboursement 			string	`json:"tauxRemboursement"`
-		Prix 										float32	`json:"prix"`
-	}
-	
+
 	tsvFile, err := os.Open("files/Presentations.txt")
 	if err != nil {
 		log.Fatal("Error opening file", err)
@@ -36,7 +25,7 @@ func makePresentations(wg *sync.WaitGroup) {
 	
 	scanner := bufio.NewScanner(tsvFile)
 	
-	var jsonRecords []Presentation
+	var jsonRecords []entities.Presentation
 	
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -86,7 +75,7 @@ func makePresentations(wg *sync.WaitGroup) {
 			prix = 0.0
 		}
 		
-		record := Presentation {
+		record := entities.Presentation {
 			Cis: cis,
 			Cip7: cip7,
 			Libelle: fields[2],
@@ -117,11 +106,6 @@ func makePresentations(wg *sync.WaitGroup) {
 
 func makeGeneriques(wg *sync.WaitGroup) {
 	defer wg.Done()
-	type Generique struct {
-		Cis 										int			`json:"cis"`
-		Group 									int			`json:"group"`
-		Libelle 								string	`json:"libelle"`
-	}
 	
 	tsvFile, err := os.Open("files/Generiques.txt")
 	if err != nil {
@@ -131,7 +115,7 @@ func makeGeneriques(wg *sync.WaitGroup) {
 	
 	scanner := bufio.NewScanner(tsvFile)
 	
-	var jsonRecords []Generique
+	var jsonRecords []entities.Generique
 	
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -147,7 +131,7 @@ func makeGeneriques(wg *sync.WaitGroup) {
 			log.Fatal(err)
 		}
 		
-		record := Generique {
+		record := entities.Generique {
 			Cis: cis,
 			Group: group,
 			Libelle: fields[1],
@@ -171,15 +155,6 @@ func makeGeneriques(wg *sync.WaitGroup) {
 
 func makeCompositions(wg *sync.WaitGroup) {
 	defer wg.Done()
-	type Composition struct {
-		Cis 										int			`json:"cis"`
-		ElementParmaceutique 		string	`json:"elementPharmaceutique"`
-		CodeSubstance 					int			`json:"codeSubstance"`
-		VoiesAdministration 	string	`json:"VoiesAdministration"`
-		Dosage 									string	`json:"dosage"`
-		ReferenceDosage 				string	`json:"referenceDosage"`
-		NatureComposant 				string	`json:"natureComposant"`
-	}
 	
 	tsvFile, err := os.Open("files/Compositions.txt")
 	if err != nil {
@@ -189,7 +164,7 @@ func makeCompositions(wg *sync.WaitGroup) {
 	
 	scanner := bufio.NewScanner(tsvFile)
 	
-	var jsonRecords []Composition
+	var jsonRecords []entities.Composition
 	
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -205,7 +180,7 @@ func makeCompositions(wg *sync.WaitGroup) {
 			log.Fatal(err)
 		}
 		
-		record := Composition {
+		record := entities.Composition {
 			Cis: cis,
 			ElementParmaceutique: fields[1],
 			CodeSubstance: codeS,
@@ -233,18 +208,6 @@ func makeCompositions(wg *sync.WaitGroup) {
 
 func makeSpecialites(wg *sync.WaitGroup) {
 	defer wg.Done()
-	type Specialite struct {
-		Cis 										int			`json:"cis"`
-		Denomination 						string	`json:"elementPharmaceutique"`
-		FormePharmaceutique 		string	`json:"formePharmaceutique"`
-		VoiesAdministration 		string	`json:"voiesAdministration"`
-		StatusAutorisation 			string	`json:"statusAutorisation"`
-		TypeProcedure	 					string	`json:"typeProcedure"`
-		EtatComercialisation 		string	`json:"etatComercialisation"`
-		DateAMM 								string	`json:"dateAMM"`
-		Titulaire 							string	`json:"titulaire"`
-		SurveillanceRenforcee		string	`json:"surveillanceRenforce"`
-	}
 	
 	tsvFile, err := os.Open("files/Specialites.txt")
 	if err != nil {
@@ -254,7 +217,7 @@ func makeSpecialites(wg *sync.WaitGroup) {
 	
 	scanner := bufio.NewScanner(tsvFile)
 	
-	var jsonRecords []Specialite
+	var jsonRecords []entities.Specialite
 	
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -265,16 +228,16 @@ func makeSpecialites(wg *sync.WaitGroup) {
 			log.Fatal(err)
 		}
 		
-		record := Specialite {
+		record := entities.Specialite {
 			Cis: cis,
 			Denomination: fields[1],
 			FormePharmaceutique: fields[2],
-			VoiesAdministration: fields[3],
+			VoiesAdministration: strings.Split(fields[3], ";"),
 			StatusAutorisation: fields[4],
 			TypeProcedure: fields[5],
 			EtatComercialisation: fields[6],
 			DateAMM: fields[7],
-			Titulaire: fields[10],
+			Titulaire: strings.TrimLeft(fields[10], " "),
 			SurveillanceRenforcee: fields[11],
 		}
 		
@@ -296,10 +259,6 @@ func makeSpecialites(wg *sync.WaitGroup) {
 
 func makeConditions(wg *sync.WaitGroup) {
 	defer wg.Done()
-	type Condition struct {
-		Cis 										int			`json:"cis"`
-		Condition 							string	`json:"condition"`
-	}
 	
 	tsvFile, err := os.Open("files/Conditions.txt")
 	if err != nil {
@@ -309,7 +268,7 @@ func makeConditions(wg *sync.WaitGroup) {
 	
 	scanner := bufio.NewScanner(tsvFile)
 	
-	var jsonRecords []Condition
+	var jsonRecords []entities.Condition
 	
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -320,7 +279,7 @@ func makeConditions(wg *sync.WaitGroup) {
 			log.Fatal(err)
 		}
 		
-		record := Condition {
+		record := entities.Condition {
 			Cis: cis,
 			Condition: fields[1],
 		}
