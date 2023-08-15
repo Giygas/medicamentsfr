@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 )
 
@@ -39,12 +40,18 @@ func main() {
 	}
 	fmt.Println(filesNames)
 	
-
-	makePresentations()
-	makeSpecialites()
-	makeGeneriques()
-	makeCompositions()
-	makeConditions()
+	//Make all the json files concurrently
+	var wg sync.WaitGroup
+	wg.Add(5)
+	
+	
+	go makePresentations(&wg)
+	go makeSpecialites(&wg)
+	go makeGeneriques(&wg)
+	go makeCompositions(&wg)
+	go makeConditions(&wg)
+	
+	wg.Wait()
 	
 	timeElapsed := time.Since(start)
 	fmt.Printf("The full database upgrade took: %s", timeElapsed)

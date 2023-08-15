@@ -9,11 +9,12 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 
-func makePresentations() {
-	
+func makePresentations(wg *sync.WaitGroup) {
+	defer wg.Done()
 	type Presentation struct {
 		Cis 										int			`json:"cis"`
 		Cip7 										int			`json:"cip7"`
@@ -111,10 +112,11 @@ func makePresentations() {
 	}
 	
 	_ = os.WriteFile("src/Presentations.json", jsonData, 0644)
+	log.Println("Presentations.json created")
 }
 
-func makeGeneriques() {
-	
+func makeGeneriques(wg *sync.WaitGroup) {
+	defer wg.Done()
 	type Generique struct {
 		Cis 										int			`json:"cis"`
 		Group 									int			`json:"group"`
@@ -164,10 +166,11 @@ func makeGeneriques() {
 	}
 	
 	_ = os.WriteFile("src/Generiques.json", jsonData, 0644)
+	log.Println("Generiques.json created")
 }
 
-func makeCompositions() {
-	
+func makeCompositions(wg *sync.WaitGroup) {
+	defer wg.Done()
 	type Composition struct {
 		Cis 										int			`json:"cis"`
 		ElementParmaceutique 		string	`json:"elementPharmaceutique"`
@@ -225,10 +228,11 @@ func makeCompositions() {
 	}
 	
 	_ = os.WriteFile("src/Compositions.json", jsonData, 0644)
+	log.Println("Compositions.json created")
 }
 
-func makeSpecialites() {
-	
+func makeSpecialites(wg *sync.WaitGroup) {
+	defer wg.Done()
 	type Specialite struct {
 		Cis 										int			`json:"cis"`
 		Denomination 						string	`json:"elementPharmaceutique"`
@@ -287,10 +291,11 @@ func makeSpecialites() {
 	}
 	
 	_ = os.WriteFile("src/Specialites.json", jsonData, 0644)
+	log.Println("Specialites.json created")
 }
 
-func makeConditions() {
-	
+func makeConditions(wg *sync.WaitGroup) {
+	defer wg.Done()
 	type Condition struct {
 		Cis 										int			`json:"cis"`
 		Condition 							string	`json:"condition"`
@@ -333,4 +338,5 @@ func makeConditions() {
 	}
 	
 	_ = os.WriteFile("src/Conditions.json", jsonData, 0644)
+	log.Println("Conditions.json created")
 }
