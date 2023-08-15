@@ -1,13 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
-	"bufio"
-	"os"
-	"strings"
 	"log"
+	"math"
+	"os"
 	"strconv"
+	"strings"
 )
 
 
@@ -23,15 +24,18 @@ func makePresentations() {
 		Cip13 									int			`json:"Cip13"`
 		Agreement 							string	`json:"Agreement"`
 		TauxRemboursement 			string	`json:"TauxRemboursement"`
-		Prix 										string	`json:"Prix"`
+		Prix 										float32	`json:"Prix"`
 	}
 	
 	tsvFile, err := os.Open("files/presentations.txt")
 	if err != nil {
+		log.Fatal("Error opening file", err)
 	}
 	defer tsvFile.Close()
 	
 	scanner := bufio.NewScanner(tsvFile)
+	
+	var jsonRecords []Presentation
 	
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -53,24 +57,33 @@ func makePresentations() {
 		}
 		
 		
-		//TODO look at how the prices are formatted in the medicaments database, they are a bit weird
-		// Remove the points as a thousands separator
-		// Change the decimal separator from comma to point
-		// Verify that the prix in not null first 
-		// var prix float32
-		// fmt.Printf("%v",fields[9])
-		// if len(fields[9]) != 0 {
-		// 	comaless := strings.Replace(strings.Trim(fields[9], "."), ",", ".", -1)
-		// 	// formattedPrix := strings.Replace(fields[9], ",", ".", 1)
-		// 	fmt.Printf("/%v",comaless)
+		// Because the downloaded database has commas as thousands and decimal separators,
+		// all the commas have to be removed except for the last one
+		// If the prix is empty, 0.0 will we added in the prix section
+		var prix float32
+	
+		if fields[9] != "" {
 			
-		// 	converted, err := strconv.ParseFloat(comaless, 32)
-		// 	if err != nil {
-		// 		log.Fatal(err)
-		// 	}
+			// Count the number of commas
+			numCommas := strings.Count(fields[9], ",")
 			
-		// 	prix = float32(converted)
-		// } 
+			// If there's more than one comma, replace all but the last one
+			if numCommas > 1 {
+				fields[9] = strings.Replace(fields[9], ",", "", numCommas-1)
+			}
+
+			// Replace the last comma with a period
+			p, err := strconv.ParseFloat(strings.Replace(fields[9], ",", ".", -1), 32)
+			
+			if err != nil {
+				log.Fatal(err)
+			}
+			p = math.Trunc(p*100) / 100
+			
+			prix = float32(p)
+		} else {
+			prix = 0.0
+		}
 		
 		record := Presentation {
 			Cis: cis,
@@ -82,26 +95,20 @@ func makePresentations() {
 			Cip13: cip13,
 			Agreement: fields[7],
 			TauxRemboursement: fields[8],
-			Prix: fields[9],
+			Prix: prix,
 		}
 		
-		jsonRecord, err := json.MarshalIndent(&record, "", "  ")
-		if err != nil {
-			fmt.Println("error:", err)
-		}
-		
+		jsonRecords = append(jsonRecords, record)
+	}
+	
+	jsonData, err := json.MarshalIndent(jsonRecords, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
 	}
 	
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
 	
-	// jsonData, err := json.MarshalIndent(&data, "", "  ")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// _ = os.WriteFile("test.json", jsonData, 0644)
-	
-	// return jsonRecord, nil
+	_ = os.WriteFile("src/presentations.json", jsonData, 0644)
 }

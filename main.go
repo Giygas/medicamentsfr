@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-  "path/filepath"
+	"path/filepath"
 )
 
 var files = map[string]string {
@@ -24,7 +24,7 @@ func main() {
 	}
 	
 	//Download all the files and convert from windows 1252 to utf8
-	// downloadAndParseAll(files)
+	downloadAndParseAll(files)
 	
 	//Pass only the names of the files to the function
 	var filesNames []string
