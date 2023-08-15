@@ -22,6 +22,8 @@ func parseAllMedicaments() []entities.Medicament{
 	
 	for _, med := range specialites {
 		
+		PrintMemUsage()
+		
 		medicament := new(entities.Medicament)
 		
 		medicament.Cis = med.Cis

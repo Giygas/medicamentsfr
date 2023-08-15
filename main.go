@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -16,6 +17,16 @@ var files = map[string]string {
 	"Generiques": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_GENER_bdpm.txt",
 	"Conditions": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CPD_bdpm.txt",
 }
+
+func PrintMemUsage() {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	fmt.Printf("Alloc = %v MiB", m.Alloc / 1024 / 1024)
+	fmt.Printf("\tTotalAlloc = %v MiB", m.TotalAlloc / 1024 / 1024)
+	fmt.Printf("\tSys = %v MiB", m.Sys / 1024 / 1024)
+	fmt.Printf("\tNumGC = %v\n", m.NumGC)
+}
+
 
 func main() {
 	start := time.Now()
@@ -41,11 +52,15 @@ func main() {
 	}
 	fmt.Println(filesNames)
 	
+	PrintMemUsage()
+
+	
 	//Make all the json files concurrently
 	var wg sync.WaitGroup
 	wg.Add(5)
 	
-	
+	PrintMemUsage()
+
 	go makePresentations(&wg)
 	go makeSpecialites(&wg)
 	go makeGeneriques(&wg)
@@ -55,7 +70,8 @@ func main() {
 	wg.Wait()
 	
 	medicaments := parseAllMedicaments()
-	
+	PrintMemUsage()
+
 	fmt.Println(medicaments[0])
 	
 	timeElapsed := time.Since(start)
