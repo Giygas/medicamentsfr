@@ -48,13 +48,13 @@ func downloadAndParseAll(files map[string]string) error {
 	for fileName, url := range(files) {
 		wg.Add(1)
 		
-		go func(filename string, url string) {
+		go func(file string, url string) {
 			defer wg.Done()
-			downloadAndParseFile(fileName, url)
+			downloadAndParseFile(file, url)
 		} (fileName, url)
 		
-		wg.Wait()
 	}
+	wg.Wait()
 
 	return nil
 }

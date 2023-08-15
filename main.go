@@ -43,24 +43,12 @@ func main() {
 	}
 	
 	//Download all the files and convert from windows 1252 to utf8
-	// downloadAndParseAll(files)
-	
-	//Pass only the names of the files to the function
-	var filesNames []string
-	for name := range(files) {
-		filesNames = append(filesNames, name)
-	}
-	fmt.Println(filesNames)
-	
-	PrintMemUsage()
-
+	downloadAndParseAll(files)
 	
 	//Make all the json files concurrently
 	var wg sync.WaitGroup
 	wg.Add(5)
 	
-	PrintMemUsage()
-
 	go makePresentations(&wg)
 	go makeSpecialites(&wg)
 	go makeGeneriques(&wg)
@@ -70,11 +58,11 @@ func main() {
 	wg.Wait()
 	
 	medicaments := parseAllMedicaments()
-	PrintMemUsage()
 
 	fmt.Println(medicaments[0])
 	
 	timeElapsed := time.Since(start)
 	fmt.Printf("The full database upgrade took: %s", timeElapsed)
 	fmt.Println()
+	PrintMemUsage()
 }

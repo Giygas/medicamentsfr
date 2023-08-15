@@ -1,11 +1,11 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"log"
+	// "encoding/json"
+	// "fmt"
+	// "log"
 	"medicamentsfr/entities"
-	"os"
+	// "os"
 	"sync"
 )
 
@@ -21,8 +21,6 @@ func parseAllMedicaments() []entities.Medicament{
 	var medicamentsSlice []entities.Medicament
 	
 	for _, med := range specialites {
-		
-		PrintMemUsage()
 		
 		medicament := new(entities.Medicament)
 		
@@ -40,63 +38,60 @@ func parseAllMedicaments() []entities.Medicament{
 		
 		wg.Add(4)
 		// Get all the compositions of this medicament
-		medicament.Composition = func (id int) []entities.Composition {
+		go func (id int) {
 			defer wg.Done()
-			var allCompos []entities.Composition
 			for _, v := range (compositions) {
 				if id == v.Cis {
-					allCompos = append(allCompos, v)
+					medicament.Composition = append(medicament.Composition, v)
 				}
 			}
-			return allCompos
 		}(med.Cis)
 		
 		// Get all the generiques of this medicament
-		medicament.Generiques = func (id int) []entities.Generique {
+		go func (id int){
 			defer wg.Done()
-			var allGeneriques []entities.Generique
 			for _, v := range (generiques) {
 				if id == v.Cis {
-					allGeneriques = append(allGeneriques, v)
+					medicament.Generiques = append(medicament.Generiques, v)
 				}
 			}
-			return allGeneriques
 		}(med.Cis)
 		
 		// Get all the presentations of thi medicament
-		medicament.Presentation = func(id int) []entities.Presentation {
+		go func(id int) {
 			defer wg.Done()
-			var allPresentations []entities.Presentation
 			for _, v := range (presentations) {
 				if id == v.Cis {
-					allPresentations = append(allPresentations, v)
+					medicament.Presentation = append(medicament.Presentation, v)
 				}
 			}
-			return allPresentations
 		}(med.Cis)
 		
 		// Get the conditions of this medicament
-		medicament.Conditions = func(id int) []entities.Condition {
+		go func(id int) {
 			defer wg.Done()
-			var allConditions []entities.Condition
 			for _, v := range (conditions) {
 				if id == v.Cis {
-					allConditions = append(allConditions, v)
+					medicament.Conditions = append(medicament.Conditions, v)
 				}
 			}
-			return allConditions
 		}(med.Cis)
 		
 		wg.Wait()
 		medicamentsSlice = append(medicamentsSlice, *medicament)
 		
 	}
-	jsonMedicament, err := json.MarshalIndent(medicamentsSlice, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
+	// jsonMedicament, err := json.MarshalIndent(medicamentsSlice, "", "  ")
+	// if err != nil {
+	// 	fmt.Println("error:", err)
+	// }
 	
-	_ = os.WriteFile("src/Medicaments.json", jsonMedicament, 0644)
-	log.Println("Medicaments.json created")
+	// _ = os.WriteFile("src/Medicaments.json", jsonMedicament, 0644)
+	// log.Println("Medicaments.json created")
+	conditions = nil
+	presentations = nil
+	specialites = nil
+	generiques = nil
+	compositions = nil
 	return medicamentsSlice
 }
