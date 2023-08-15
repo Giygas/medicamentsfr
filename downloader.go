@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"golang.org/x/text/encoding/charmap"
 	"sync"
+
+	"golang.org/x/text/encoding/charmap"
 )
 
 func downloadAndParseFile(filepath string, url string) error {

@@ -15,19 +15,19 @@ import (
 func makePresentations() {
 	
 	type Presentation struct {
-		Cis 										int			`json:"Cis"`
-		Cip7 										int			`json:"Cip7"`
-		Libelle 								string	`json:"Libelle"`
-		StatusAdministratif 		string	`json:"StatusAdministratif"`
-		EtatComercialisation 		string	`json:"EtatComercialisation"`
-		DateDeclaration 				string	`json:"DateDeclaration"`
-		Cip13 									int			`json:"Cip13"`
-		Agreement 							string	`json:"Agreement"`
-		TauxRemboursement 			string	`json:"TauxRemboursement"`
-		Prix 										float32	`json:"Prix"`
+		Cis 										int			`json:"cis"`
+		Cip7 										int			`json:"cip7"`
+		Libelle 								string	`json:"libelle"`
+		StatusAdministratif 		string	`json:"statusAdministratif"`
+		EtatComercialisation 		string	`json:"etatComercialisation"`
+		DateDeclaration 				string	`json:"dateDeclaration"`
+		Cip13 									int			`json:"cip13"`
+		Agreement 							string	`json:"agreement"`
+		TauxRemboursement 			string	`json:"tauxRemboursement"`
+		Prix 										float32	`json:"prix"`
 	}
 	
-	tsvFile, err := os.Open("files/presentations.txt")
+	tsvFile, err := os.Open("files/Presentations.txt")
 	if err != nil {
 		log.Fatal("Error opening file", err)
 	}
@@ -110,5 +110,180 @@ func makePresentations() {
 		log.Fatal(err)
 	}
 	
-	_ = os.WriteFile("src/presentations.json", jsonData, 0644)
+	_ = os.WriteFile("src/Presentations.json", jsonData, 0644)
+}
+
+func makeGeneriques() {
+	
+	type Generique struct {
+		Cis 										int			`json:"cis"`
+		Group 									int			`json:"group"`
+		Libelle 								string	`json:"libelle"`
+	}
+	
+	tsvFile, err := os.Open("files/Generiques.txt")
+	if err != nil {
+		log.Fatal("Error opening file", err)
+	}
+	defer tsvFile.Close()
+	
+	scanner := bufio.NewScanner(tsvFile)
+	
+	var jsonRecords []Generique
+	
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Split(line, "\t")
+		
+		cis, err := strconv.Atoi(fields[2])
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		group, err := strconv.Atoi(fields[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		record := Generique {
+			Cis: cis,
+			Group: group,
+			Libelle: fields[1],
+		}
+		
+		jsonRecords = append(jsonRecords, record)
+	}
+	
+	jsonData, err := json.MarshalIndent(jsonRecords, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+	
+	_ = os.WriteFile("src/Generiques.json", jsonData, 0644)
+}
+
+func makeCompositions() {
+	
+	type Composition struct {
+		Cis 										int			`json:"cis"`
+		ElementParmaceutique 		string	`json:"elementPharmaceutique"`
+		CodeSubstance 					int			`json:"codeSubstance"`
+		DenominationSubstance 	string	`json:"denominationSubstance"`
+		Dosage 									string	`json:"dosage"`
+		ReferenceDosage 				string	`json:"referenceDosage"`
+		NatureComposant 				string	`json:"natureComposant"`
+	}
+	
+	tsvFile, err := os.Open("files/Compositions.txt")
+	if err != nil {
+		log.Fatal("Error opening file", err)
+	}
+	defer tsvFile.Close()
+	
+	scanner := bufio.NewScanner(tsvFile)
+	
+	var jsonRecords []Composition
+	
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Split(line, "\t")
+		
+		cis, err := strconv.Atoi(fields[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		codeS, err := strconv.Atoi(fields[2])
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		record := Composition {
+			Cis: cis,
+			ElementParmaceutique: fields[1],
+			CodeSubstance: codeS,
+			DenominationSubstance: fields[3],
+			Dosage: fields[4],
+			ReferenceDosage: fields[5],
+			NatureComposant: fields[6],
+		}
+		
+		jsonRecords = append(jsonRecords, record)
+	}
+	
+	jsonData, err := json.MarshalIndent(jsonRecords, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+	
+	_ = os.WriteFile("src/Compositions.json", jsonData, 0644)
+}
+
+func makeSpecialites() {
+	
+	type Specialite struct {
+		Cis 										int			`json:"cis"`
+		Denomination 						string	`json:"elementPharmaceutique"`
+		FormePharmaceutique 					int			`json:"codeSubstance"`
+		DenominationSubstance 	string	`json:"denominationSubstance"`
+		Dosage 									string	`json:"dosage"`
+		ReferenceDosage 				string	`json:"referenceDosage"`
+		NatureComposant 				string	`json:"natureComposant"`
+	}
+	
+	tsvFile, err := os.Open("files/Specialites.txt")
+	if err != nil {
+		log.Fatal("Error opening file", err)
+	}
+	defer tsvFile.Close()
+	
+	scanner := bufio.NewScanner(tsvFile)
+	
+	var jsonRecords []Specialite
+	
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Split(line, "\t")
+		
+		cis, err := strconv.Atoi(fields[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		codeS, err := strconv.Atoi(fields[2])
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		record := Specialite {
+			Cis: cis,
+			ElementParmaceutiaue: fields[1],
+			CodeSubstance: codeS,
+			DenominationSubstance: fields[3],
+			Dosage: fields[4],
+			ReferenceDosage: fields[5],
+			NatureComposant: fields[6],
+		}
+		
+		jsonRecords = append(jsonRecords, record)
+	}
+	
+	jsonData, err := json.MarshalIndent(jsonRecords, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+	
+	_ = os.WriteFile("src/Specialites.json", jsonData, 0644)
 }

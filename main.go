@@ -4,21 +4,27 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 var files = map[string]string {
-	"specialites": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_bdpm.txt",
-	"presentations": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CIP_bdpm.txt",
-	"compositions": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_COMPO_bdpm.txt",
-	"generiques": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_GENER_bdpm.txt",
-	"conditions": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CPD_bdpm.txt",
+	"Specialites": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_bdpm.txt",
+	"Presentations": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CIP_bdpm.txt",
+	"Compositions": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_COMPO_bdpm.txt",
+	"Generiques": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_GENER_bdpm.txt",
+	"Conditions": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CPD_bdpm.txt",
 }
 
 func main() {
-	
+	start := time.Now()
 	//Create the files directory if it doesn't exists
 	filePath := filepath.Join(".", "files")
 	err := os.MkdirAll(filePath, os.ModePerm)
+	if err != nil {
+		panic( err)
+	}
+	filePath = filepath.Join(".", "src")
+	err = os.MkdirAll(filePath, os.ModePerm)
 	if err != nil {
 		panic( err)
 	}
@@ -33,7 +39,12 @@ func main() {
 	}
 	fmt.Println(filesNames)
 	
-	// TODO:Parse to JSON each downloaded file
+
 	makePresentations()
+	makeGeneriques()
+	makeCompositions()
 	
+	timeElapsed := time.Since(start)
+	fmt.Printf("The full database upgrade took: %s", timeElapsed)
+	fmt.Println()
 }
