@@ -24,7 +24,7 @@ func main() {
 	}
 	
 	//Download all the files and convert from windows 1252 to utf8
-	downloadAndParseAll(files)
+	// downloadAndParseAll(files)
 	
 	//Pass only the names of the files to the function
 	var filesNames []string
@@ -34,11 +34,6 @@ func main() {
 	fmt.Println(filesNames)
 	
 	// TODO:Parse to JSON each downloaded file
-	presentations, err := splitTSVFile("presentations")
-	if err != nil {
-		panic(err)
-	}
-	println(presentations)
-	splitTSVFile("specialites")
+	makePresentations()
 	
 }
