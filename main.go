@@ -41,8 +41,10 @@ func main() {
 	
 
 	makePresentations()
+	makeSpecialites()
 	makeGeneriques()
 	makeCompositions()
+	makeConditions()
 	
 	timeElapsed := time.Since(start)
 	fmt.Printf("The full database upgrade took: %s", timeElapsed)

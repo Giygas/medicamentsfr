@@ -172,7 +172,7 @@ func makeCompositions() {
 		Cis 										int			`json:"cis"`
 		ElementParmaceutique 		string	`json:"elementPharmaceutique"`
 		CodeSubstance 					int			`json:"codeSubstance"`
-		DenominationSubstance 	string	`json:"denominationSubstance"`
+		VoiesAdministration 	string	`json:"VoiesAdministration"`
 		Dosage 									string	`json:"dosage"`
 		ReferenceDosage 				string	`json:"referenceDosage"`
 		NatureComposant 				string	`json:"natureComposant"`
@@ -206,7 +206,7 @@ func makeCompositions() {
 			Cis: cis,
 			ElementParmaceutique: fields[1],
 			CodeSubstance: codeS,
-			DenominationSubstance: fields[3],
+			VoiesAdministration: fields[3],
 			Dosage: fields[4],
 			ReferenceDosage: fields[5],
 			NatureComposant: fields[6],
@@ -232,11 +232,14 @@ func makeSpecialites() {
 	type Specialite struct {
 		Cis 										int			`json:"cis"`
 		Denomination 						string	`json:"elementPharmaceutique"`
-		FormePharmaceutique 					int			`json:"codeSubstance"`
-		DenominationSubstance 	string	`json:"denominationSubstance"`
-		Dosage 									string	`json:"dosage"`
-		ReferenceDosage 				string	`json:"referenceDosage"`
-		NatureComposant 				string	`json:"natureComposant"`
+		FormePharmaceutique 		string	`json:"formePharmaceutique"`
+		VoiesAdministration 		string	`json:"voiesAdministration"`
+		StatusAutorisation 			string	`json:"statusAutorisation"`
+		TypeProcedure	 					string	`json:"typeProcedure"`
+		EtatComercialisation 		string	`json:"etatComercialisation"`
+		DateAMM 								string	`json:"dateAMM"`
+		Titulaire 							string	`json:"titulaire"`
+		SurveillanceRenforcee		string	`json:"surveillanceRenforce"`
 	}
 	
 	tsvFile, err := os.Open("files/Specialites.txt")
@@ -257,20 +260,18 @@ func makeSpecialites() {
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		codeS, err := strconv.Atoi(fields[2])
-		if err != nil {
-			log.Fatal(err)
-		}
 		
 		record := Specialite {
 			Cis: cis,
-			ElementParmaceutiaue: fields[1],
-			CodeSubstance: codeS,
-			DenominationSubstance: fields[3],
-			Dosage: fields[4],
-			ReferenceDosage: fields[5],
-			NatureComposant: fields[6],
+			Denomination: fields[1],
+			FormePharmaceutique: fields[2],
+			VoiesAdministration: fields[3],
+			StatusAutorisation: fields[4],
+			TypeProcedure: fields[5],
+			EtatComercialisation: fields[6],
+			DateAMM: fields[7],
+			Titulaire: fields[10],
+			SurveillanceRenforcee: fields[11],
 		}
 		
 		jsonRecords = append(jsonRecords, record)
@@ -286,4 +287,50 @@ func makeSpecialites() {
 	}
 	
 	_ = os.WriteFile("src/Specialites.json", jsonData, 0644)
+}
+
+func makeConditions() {
+	
+	type Condition struct {
+		Cis 										int			`json:"cis"`
+		Condition 							string	`json:"condition"`
+	}
+	
+	tsvFile, err := os.Open("files/Conditions.txt")
+	if err != nil {
+		log.Fatal("Error opening file", err)
+	}
+	defer tsvFile.Close()
+	
+	scanner := bufio.NewScanner(tsvFile)
+	
+	var jsonRecords []Condition
+	
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Split(line, "\t")
+		
+		cis, err := strconv.Atoi(fields[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		record := Condition {
+			Cis: cis,
+			Condition: fields[1],
+		}
+		
+		jsonRecords = append(jsonRecords, record)
+	}
+	
+	jsonData, err := json.MarshalIndent(jsonRecords, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+	
+	_ = os.WriteFile("src/Conditions.json", jsonData, 0644)
 }
