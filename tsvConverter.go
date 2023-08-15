@@ -32,7 +32,7 @@ func makePresentations() {
 	defer tsvFile.Close()
 	
 	scanner := bufio.NewScanner(tsvFile)
-
+	
 	for scanner.Scan() {
 		line := scanner.Text()
 		fields := strings.Split(line, "\t")
@@ -85,18 +85,11 @@ func makePresentations() {
 			Prix: fields[9],
 		}
 		
-		jsonRecord, err := json.Marshal(record)
+		jsonRecord, err := json.MarshalIndent(&record, "", "  ")
 		if err != nil {
 			fmt.Println("error:", err)
 		}
 		
-		fmt.Println(record)
-		fmt.Println(string(jsonRecord))
-		
-		// var parsedPresentations []Presentation
-		// fmt.Println(json.Unmarshal([]byte(jsonRecord),&parsedPresentations))
-		
-		fmt.Println("-----------------")
 	}
 	
 	if err := scanner.Err(); err != nil {
