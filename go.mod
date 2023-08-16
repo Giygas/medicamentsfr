@@ -1,4 +1,4 @@
-module github.com/giygas/medicamentsparser
+module github.com/giygas/medicamentsfr
 
 go 1.21.0
 

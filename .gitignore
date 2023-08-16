@@ -1,5 +1,1 @@
-.files/**
-/files/**
-files*
-files/*.txt
-src/*
+medicamentsparser/files/*.txt
