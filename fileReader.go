@@ -3,7 +3,7 @@ package medicamentsparser
 import (
 	"encoding/json"
 	"log"
-	"medicamentsparser/entities"
+	"github.com/giygas/medicamentsparser/entities"
 	"os"
 )
 

@@ -1,7 +1,7 @@
 package medicamentsparser_test
 
 import (
-	"medicamentsparser"
+	"github.com/giygas/medicamentsparser"
 	"reflect"
 	"testing"
 )

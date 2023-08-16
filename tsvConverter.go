@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"log"
 	"math"
-	"medicamentsparser/entities"
+	"github.com/giygas/medicamentsparser/entities"
 	"os"
 	"strconv"
 	"strings"

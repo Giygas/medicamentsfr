@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"medicamentsparser/entities"
+	"github.com/giygas/medicamentsparser/entities"
 	"os"
 	"sync"
 	"time"
