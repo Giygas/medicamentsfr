@@ -2,38 +2,42 @@ package main
 
 import (
 	"fmt"
-	"os"
-  "path/filepath"
+	"medicamentsfr/entities"
+	"runtime"
+	"time"
 )
 
+var medicaments []entities.Medicament
+
+
 var files = map[string]string {
-	"specialites": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_bdpm.txt",
-	"presentations": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CIP_bdpm.txt",
-	"compositions": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_COMPO_bdpm.txt",
-	"generiques": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_GENER_bdpm.txt",
-	"conditions": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CPD_bdpm.txt",
+	"Specialites": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_bdpm.txt",
+	"Presentations": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CIP_bdpm.txt",
+	"Compositions": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_COMPO_bdpm.txt",
+	"Generiques": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_GENER_bdpm.txt",
+	"Conditions": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CPD_bdpm.txt",
 }
 
+func PrintMemUsage() {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	fmt.Printf("Alloc = %v MiB", m.Alloc / 1024 / 1024)
+	fmt.Printf("\tTotalAlloc = %v MiB", m.TotalAlloc / 1024 / 1024)
+	fmt.Printf("\tSys = %v MiB", m.Sys / 1024 / 1024)
+	fmt.Printf("\tNumGC = %v\n", m.NumGC)
+}
+
+
 func main() {
-	
-	//Create the files directory if it doesn't exists
-	filePath := filepath.Join(".", "files")
-	err := os.MkdirAll(filePath, os.ModePerm)
-	if err != nil {
-		panic( err)
-	}
-	
+	start := time.Now()
+
 	//Download all the files and convert from windows 1252 to utf8
-	// downloadAndParseAll(files)
+	downloadAndParseAll(files)
 	
-	//Pass only the names of the files to the function
-	var filesNames []string
-	for name := range(files) {
-		filesNames = append(filesNames, name)
-	}
-	fmt.Println(filesNames)
-	
-	// TODO:Parse to JSON each downloaded file
-	makePresentations()
+	//Parse all the downloaded files and create the medicaments.json
+	medicaments = parseAllMedicaments()
+
+	timeElapsed := time.Since(start)
+	fmt.Printf("The full database upgrade took: %s", timeElapsed)
 	
 }

@@ -1,38 +1,30 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"bufio"
-	"os"
-	"strings"
 	"log"
+	"math"
+	"medicamentsfr/entities"
+	"os"
 	"strconv"
+	"strings"
+	"sync"
 )
 
 
-func makePresentations() {
-	
-	type Presentation struct {
-		Cis 										int			`json:"Cis"`
-		Cip7 										int			`json:"Cip7"`
-		Libelle 								string	`json:"Libelle"`
-		StatusAdministratif 		string	`json:"StatusAdministratif"`
-		EtatComercialisation 		string	`json:"EtatComercialisation"`
-		DateDeclaration 				string	`json:"DateDeclaration"`
-		Cip13 									int			`json:"Cip13"`
-		Agreement 							string	`json:"Agreement"`
-		TauxRemboursement 			string	`json:"TauxRemboursement"`
-		Prix 										string	`json:"Prix"`
-	}
-	
-	tsvFile, err := os.Open("files/presentations.txt")
+func makePresentations(wg *sync.WaitGroup) []entities.Presentation{
+	defer wg.Done()
+
+	tsvFile, err := os.Open("files/Presentations.txt")
 	if err != nil {
+		log.Fatal("Error opening file", err)
 	}
 	defer tsvFile.Close()
 	
 	scanner := bufio.NewScanner(tsvFile)
-
+	
+	var jsonRecords []entities.Presentation
+	
 	for scanner.Scan() {
 		line := scanner.Text()
 		fields := strings.Split(line, "\t")
@@ -53,26 +45,35 @@ func makePresentations() {
 		}
 		
 		
-		//TODO look at how the prices are formatted in the medicaments database, they are a bit weird
-		// Remove the points as a thousands separator
-		// Change the decimal separator from comma to point
-		// Verify that the prix in not null first 
-		// var prix float32
-		// fmt.Printf("%v",fields[9])
-		// if len(fields[9]) != 0 {
-		// 	comaless := strings.Replace(strings.Trim(fields[9], "."), ",", ".", -1)
-		// 	// formattedPrix := strings.Replace(fields[9], ",", ".", 1)
-		// 	fmt.Printf("/%v",comaless)
+		// Because the downloaded database has commas as thousands and decimal separators,
+		// all the commas have to be removed except for the last one
+		// If the prix is empty, 0.0 will we added in the prix section
+		var prix float32
+	
+		if fields[9] != "" {
 			
-		// 	converted, err := strconv.ParseFloat(comaless, 32)
-		// 	if err != nil {
-		// 		log.Fatal(err)
-		// 	}
+			// Count the number of commas
+			numCommas := strings.Count(fields[9], ",")
 			
-		// 	prix = float32(converted)
-		// } 
+			// If there's more than one comma, replace all but the last one
+			if numCommas > 1 {
+				fields[9] = strings.Replace(fields[9], ",", "", numCommas-1)
+			}
+
+			// Replace the last comma with a period
+			p, err := strconv.ParseFloat(strings.Replace(fields[9], ",", ".", -1), 32)
+			
+			if err != nil {
+				log.Fatal(err)
+			}
+			p = math.Trunc(p*100) / 100
+			
+			prix = float32(p)
+		} else {
+			prix = 0.0
+		}
 		
-		record := Presentation {
+		record := entities.Presentation {
 			Cis: cis,
 			Cip7: cip7,
 			Libelle: fields[2],
@@ -82,33 +83,176 @@ func makePresentations() {
 			Cip13: cip13,
 			Agreement: fields[7],
 			TauxRemboursement: fields[8],
-			Prix: fields[9],
+			Prix: prix,
 		}
 		
-		jsonRecord, err := json.Marshal(record)
-		if err != nil {
-			fmt.Println("error:", err)
-		}
-		
-		fmt.Println(record)
-		fmt.Println(string(jsonRecord))
-		
-		// var parsedPresentations []Presentation
-		// fmt.Println(json.Unmarshal([]byte(jsonRecord),&parsedPresentations))
-		
-		fmt.Println("-----------------")
+		jsonRecords = append(jsonRecords, record)
 	}
 	
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-	
-	// jsonData, err := json.MarshalIndent(&data, "", "  ")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	log.Println("Presentations done")
+	return jsonRecords
+}
 
-	// _ = os.WriteFile("test.json", jsonData, 0644)
+func makeGeneriques(wg *sync.WaitGroup) []entities.Generique{
+	defer wg.Done()
 	
-	// return jsonRecord, nil
+	tsvFile, err := os.Open("files/Generiques.txt")
+	if err != nil {
+		log.Fatal("Error opening file", err)
+	}
+	defer tsvFile.Close()
+	
+	scanner := bufio.NewScanner(tsvFile)
+	
+	var jsonRecords []entities.Generique
+	
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Split(line, "\t")
+		
+		cis, err := strconv.Atoi(fields[2])
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		group, err := strconv.Atoi(fields[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		record := entities.Generique {
+			Cis: cis,
+			Group: group,
+			Libelle: fields[1],
+		}
+		
+		jsonRecords = append(jsonRecords, record)
+	}
+	
+	
+	log.Println("Generiques done")
+	return jsonRecords
+}
+
+func makeCompositions(wg *sync.WaitGroup) []entities.Composition{
+	defer wg.Done()
+	
+	tsvFile, err := os.Open("files/Compositions.txt")
+	if err != nil {
+		log.Fatal("Error opening file", err)
+	}
+	defer tsvFile.Close()
+	
+	scanner := bufio.NewScanner(tsvFile)
+	
+	var jsonRecords []entities.Composition
+	
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Split(line, "\t")
+		
+		cis, err := strconv.Atoi(fields[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		codeS, err := strconv.Atoi(fields[2])
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		record := entities.Composition {
+			Cis: cis,
+			ElementParmaceutique: fields[1],
+			CodeSubstance: codeS,
+			DenominationSubstance: fields[3],
+			Dosage: fields[4],
+			ReferenceDosage: fields[5],
+			NatureComposant: fields[6],
+		}
+		
+		jsonRecords = append(jsonRecords, record)
+	}
+	
+	
+	log.Println("Compositions done")
+	return jsonRecords
+}
+
+func makeSpecialites(wg *sync.WaitGroup) []entities.Specialite{
+	defer wg.Done()
+	
+	tsvFile, err := os.Open("files/Specialites.txt")
+	if err != nil {
+		log.Fatal("Error opening file", err)
+	}
+	defer tsvFile.Close()
+	
+	scanner := bufio.NewScanner(tsvFile)
+	
+	var jsonRecords []entities.Specialite
+	
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Split(line, "\t")
+		
+		cis, err := strconv.Atoi(fields[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		record := entities.Specialite {
+			Cis: cis,
+			Denomination: fields[1],
+			FormePharmaceutique: fields[2],
+			VoiesAdministration: strings.Split(fields[3], ";"),
+			StatusAutorisation: fields[4],
+			TypeProcedure: fields[5],
+			EtatComercialisation: fields[6],
+			DateAMM: fields[7],
+			Titulaire: strings.TrimLeft(fields[10], " "),
+			SurveillanceRenforcee: fields[11],
+		}
+		
+		jsonRecords = append(jsonRecords, record)
+	}
+	
+	
+	log.Println("Specialites done")
+	return jsonRecords
+}
+
+func makeConditions(wg *sync.WaitGroup) []entities.Condition{
+	defer wg.Done()
+	
+	tsvFile, err := os.Open("files/Conditions.txt")
+	if err != nil {
+		log.Fatal("Error opening file", err)
+	}
+	defer tsvFile.Close()
+	
+	scanner := bufio.NewScanner(tsvFile)
+	
+	var jsonRecords []entities.Condition
+	
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Split(line, "\t")
+		
+		cis, err := strconv.Atoi(fields[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+		
+		record := entities.Condition {
+			Cis: cis,
+			Condition: fields[1],
+		}
+		
+		jsonRecords = append(jsonRecords, record)
+	}
+	
+	
+	log.Println("Conditions done")
+	return jsonRecords
 }
