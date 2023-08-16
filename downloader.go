@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sync"
 
 	"golang.org/x/text/encoding/charmap"
@@ -42,6 +43,18 @@ func downloadAndParseFile(filepath string, url string) error {
 //Params:
 // 1. files map[string]string - A map containing the name of the file and the url
 func downloadAndParseAll(files map[string]string) error {
+	
+	//Create the files directory if it doesn't exists
+	filePath := filepath.Join(".", "files")
+	err := os.MkdirAll(filePath, os.ModePerm)
+	if err != nil {
+		panic( err)
+	}
+	filePath = filepath.Join(".", "src")
+	err = os.MkdirAll(filePath, os.ModePerm)
+	if err != nil {
+		panic( err)
+	}
 	
 	var wg sync.WaitGroup
 	

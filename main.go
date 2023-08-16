@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
+	"medicamentsfr/entities"
 	"runtime"
-	"sync"
 	"time"
 )
+
+var medicaments []entities.Medicament
 
 
 var files = map[string]string {
@@ -30,39 +30,14 @@ func PrintMemUsage() {
 
 func main() {
 	start := time.Now()
-	//Create the files directory if it doesn't exists
-	filePath := filepath.Join(".", "files")
-	err := os.MkdirAll(filePath, os.ModePerm)
-	if err != nil {
-		panic( err)
-	}
-	filePath = filepath.Join(".", "src")
-	err = os.MkdirAll(filePath, os.ModePerm)
-	if err != nil {
-		panic( err)
-	}
-	
+
 	//Download all the files and convert from windows 1252 to utf8
 	downloadAndParseAll(files)
 	
-	//Make all the json files concurrently
-	var wg sync.WaitGroup
-	wg.Add(5)
-	
-	go makePresentations(&wg)
-	go makeSpecialites(&wg)
-	go makeGeneriques(&wg)
-	go makeCompositions(&wg)
-	go makeConditions(&wg)
-	
-	wg.Wait()
-	
-	medicaments := parseAllMedicaments()
+	//Parse all the downloaded files and create the medicaments.json
+	medicaments = parseAllMedicaments()
 
-	fmt.Println(medicaments[0])
-	
 	timeElapsed := time.Since(start)
 	fmt.Printf("The full database upgrade took: %s", timeElapsed)
-	fmt.Println()
-	PrintMemUsage()
+	
 }

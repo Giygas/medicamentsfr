@@ -1,27 +1,59 @@
 package main
 
 import (
-	// "encoding/json"
-	// "fmt"
-	// "log"
 	"encoding/json"
 	"fmt"
 	"log"
 	"medicamentsfr/entities"
 	"os"
-
-	// "os"
 	"sync"
 )
 
 func parseAllMedicaments() []entities.Medicament{
+	
+	//Make all the json files concurrently
+	var wg sync.WaitGroup
+	wg.Add(5)
 
-	// CREATE THE FULL MEDICAMENT WITH ALL HIS VARIABLES
-	conditions := conditionFileToJSON()
-	presentations := presentationFileToJSON()
-	specialites := specialitesFileToJSON()
-	generiques := generiqueFileToJSON()
-	compositions := compositionFileToJSON()
+	conditionsChan := make(chan []entities.Condition)
+	presentationsChan := make(chan []entities.Presentation)
+	specialitesChan := make(chan []entities.Specialite)
+	generiquesChan := make(chan []entities.Generique)
+	compositionsChan := make(chan []entities.Composition)
+
+	go func() {
+		conditionsChan <- makeConditions(&wg)
+	}()
+
+	go func() {
+		presentationsChan <- makePresentations(&wg)
+	}()
+
+	go func() {
+		specialitesChan <- makeSpecialites(&wg)
+	}()
+
+	go func() {
+		generiquesChan <- makeGeneriques(&wg)
+	}()
+
+	go func() {
+		compositionsChan <- makeCompositions(&wg)
+	}()
+
+	wg.Wait()
+
+	conditions := <-conditionsChan
+	presentations := <-presentationsChan
+	specialites := <-specialitesChan
+	generiques := <-generiquesChan
+	compositions := <-compositionsChan
+	
+	conditionsChan = nil
+	presentationsChan = nil
+	specialitesChan = nil
+	generiquesChan = nil
+	compositionsChan = nil
 
 	var medicamentsSlice []entities.Medicament
 	
@@ -78,8 +110,6 @@ func parseAllMedicaments() []entities.Medicament{
 			defer wg.Done()
 			for _, v := range (conditions) {
 				if id == v.Cis {
-					fmt.Println(v)
-					fmt.Println(v.Condition)
 					medicament.Conditions = append(medicament.Conditions, v.Condition)
 				}
 			}
@@ -89,6 +119,7 @@ func parseAllMedicaments() []entities.Medicament{
 		medicamentsSlice = append(medicamentsSlice, *medicament)
 		
 	}
+	
 	jsonMedicament, err := json.MarshalIndent(medicamentsSlice, "", "  ")
 	if err != nil {
 		fmt.Println("error:", err)
@@ -96,6 +127,7 @@ func parseAllMedicaments() []entities.Medicament{
 	
 	_ = os.WriteFile("src/Medicaments.json", jsonMedicament, 0644)
 	log.Println("Medicaments.json created")
+	
 	conditions = nil
 	presentations = nil
 	specialites = nil

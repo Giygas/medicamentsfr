@@ -2,8 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
-	"fmt"
 	"log"
 	"math"
 	"medicamentsfr/entities"
@@ -14,7 +12,7 @@ import (
 )
 
 
-func makePresentations(wg *sync.WaitGroup) {
+func makePresentations(wg *sync.WaitGroup) []entities.Presentation{
 	defer wg.Done()
 
 	tsvFile, err := os.Open("files/Presentations.txt")
@@ -91,20 +89,11 @@ func makePresentations(wg *sync.WaitGroup) {
 		jsonRecords = append(jsonRecords, record)
 	}
 	
-	jsonData, err := json.MarshalIndent(jsonRecords, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-	
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-	
-	_ = os.WriteFile("src/Presentations.json", jsonData, 0644)
-	log.Println("Presentations.json created")
+	log.Println("Presentations done")
+	return jsonRecords
 }
 
-func makeGeneriques(wg *sync.WaitGroup) {
+func makeGeneriques(wg *sync.WaitGroup) []entities.Generique{
 	defer wg.Done()
 	
 	tsvFile, err := os.Open("files/Generiques.txt")
@@ -140,20 +129,12 @@ func makeGeneriques(wg *sync.WaitGroup) {
 		jsonRecords = append(jsonRecords, record)
 	}
 	
-	jsonData, err := json.MarshalIndent(jsonRecords, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
 	
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-	
-	_ = os.WriteFile("src/Generiques.json", jsonData, 0644)
-	log.Println("Generiques.json created")
+	log.Println("Generiques done")
+	return jsonRecords
 }
 
-func makeCompositions(wg *sync.WaitGroup) {
+func makeCompositions(wg *sync.WaitGroup) []entities.Composition{
 	defer wg.Done()
 	
 	tsvFile, err := os.Open("files/Compositions.txt")
@@ -193,20 +174,12 @@ func makeCompositions(wg *sync.WaitGroup) {
 		jsonRecords = append(jsonRecords, record)
 	}
 	
-	jsonData, err := json.MarshalIndent(jsonRecords, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
 	
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-	
-	_ = os.WriteFile("src/Compositions.json", jsonData, 0644)
-	log.Println("Compositions.json created")
+	log.Println("Compositions done")
+	return jsonRecords
 }
 
-func makeSpecialites(wg *sync.WaitGroup) {
+func makeSpecialites(wg *sync.WaitGroup) []entities.Specialite{
 	defer wg.Done()
 	
 	tsvFile, err := os.Open("files/Specialites.txt")
@@ -244,20 +217,12 @@ func makeSpecialites(wg *sync.WaitGroup) {
 		jsonRecords = append(jsonRecords, record)
 	}
 	
-	jsonData, err := json.MarshalIndent(jsonRecords, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
 	
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-	
-	_ = os.WriteFile("src/Specialites.json", jsonData, 0644)
-	log.Println("Specialites.json created")
+	log.Println("Specialites done")
+	return jsonRecords
 }
 
-func makeConditions(wg *sync.WaitGroup) {
+func makeConditions(wg *sync.WaitGroup) []entities.Condition{
 	defer wg.Done()
 	
 	tsvFile, err := os.Open("files/Conditions.txt")
@@ -287,15 +252,7 @@ func makeConditions(wg *sync.WaitGroup) {
 		jsonRecords = append(jsonRecords, record)
 	}
 	
-	jsonData, err := json.MarshalIndent(jsonRecords, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
 	
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-	
-	_ = os.WriteFile("src/Conditions.json", jsonData, 0644)
-	log.Println("Conditions.json created")
+	log.Println("Conditions done")
+	return jsonRecords
 }
