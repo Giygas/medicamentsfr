@@ -1,4 +1,4 @@
-package main
+package medicamentsparser
 
 import (
 	"bufio"
@@ -40,9 +40,8 @@ func downloadAndParseFile(filepath string, url string) error {
 }
 
 //Download all files concurrently
-//Params:
-// 1. files map[string]string - A map containing the name of the file and the url
 func downloadAndParseAll() error {
+	
 	//Files to download
 	var files = map[string]string {
 		"Specialites": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_bdpm.txt",

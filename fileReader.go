@@ -1,9 +1,9 @@
-package main
+package medicamentsparser
 
 import (
 	"encoding/json"
 	"log"
-	"medicamentsfr/entities"
+	"medicamentsparser/entities"
 	"os"
 )
 

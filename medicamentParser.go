@@ -1,15 +1,21 @@
-package main
+package medicamentsparser
 
 import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"medicamentsfr/entities"
+	"medicamentsparser/entities"
 	"os"
 	"sync"
+	"time"
 )
 
-func parseAllMedicaments() []entities.Medicament{
+func ParseAllMedicaments() []entities.Medicament{
+	
+	start := time.Now()
+	
+	// Download the neccesary files from https://base-donnees-publique.medicaments.gouv.fr/telechargement.php
+	downloadAndParseAll()
 	
 	//Make all the json files concurrently
 	var wg sync.WaitGroup
@@ -133,5 +139,9 @@ func parseAllMedicaments() []entities.Medicament{
 	specialites = nil
 	generiques = nil
 	compositions = nil
+	
+	timeElapsed := time.Since(start)
+	fmt.Printf("The full database upgrade took: %s", timeElapsed)
+	
 	return medicamentsSlice
 }

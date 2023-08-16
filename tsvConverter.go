@@ -1,10 +1,10 @@
-package main
+package medicamentsparser
 
 import (
 	"bufio"
 	"log"
 	"math"
-	"medicamentsfr/entities"
+	"medicamentsparser/entities"
 	"os"
 	"strconv"
 	"strings"

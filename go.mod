@@ -1,4 +1,4 @@
-module medicamentsfr
+module medicamentsparser
 
 go 1.21.0
 
