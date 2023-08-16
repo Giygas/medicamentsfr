@@ -42,7 +42,15 @@ func downloadAndParseFile(filepath string, url string) error {
 //Download all files concurrently
 //Params:
 // 1. files map[string]string - A map containing the name of the file and the url
-func downloadAndParseAll(files map[string]string) error {
+func downloadAndParseAll() error {
+	//Files to download
+	var files = map[string]string {
+		"Specialites": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_bdpm.txt",
+		"Presentations": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CIP_bdpm.txt",
+		"Compositions": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_COMPO_bdpm.txt",
+		"Generiques": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_GENER_bdpm.txt",
+		"Conditions": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CPD_bdpm.txt",
+	}
 	
 	//Create the files directory if it doesn't exists
 	filePath := filepath.Join(".", "files")

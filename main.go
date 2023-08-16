@@ -10,14 +10,6 @@ import (
 var medicaments []entities.Medicament
 
 
-var files = map[string]string {
-	"Specialites": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_bdpm.txt",
-	"Presentations": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CIP_bdpm.txt",
-	"Compositions": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_COMPO_bdpm.txt",
-	"Generiques": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_GENER_bdpm.txt",
-	"Conditions": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CPD_bdpm.txt",
-}
-
 func PrintMemUsage() {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
@@ -32,7 +24,7 @@ func main() {
 	start := time.Now()
 
 	//Download all the files and convert from windows 1252 to utf8
-	downloadAndParseAll(files)
+	downloadAndParseAll()
 	
 	//Parse all the downloaded files and create the medicaments.json
 	medicaments = parseAllMedicaments()
