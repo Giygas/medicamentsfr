@@ -4,7 +4,12 @@ import (
 	// "encoding/json"
 	// "fmt"
 	// "log"
+	"encoding/json"
+	"fmt"
+	"log"
 	"medicamentsfr/entities"
+	"os"
+
 	// "os"
 	"sync"
 )
@@ -27,6 +32,7 @@ func parseAllMedicaments() []entities.Medicament{
 		medicament.Cis = med.Cis
 		medicament.Denomination = med.Denomination
 		medicament.FormePharmaceutique = med.FormePharmaceutique
+		medicament.VoiesAdministration = med.VoiesAdministration
 		medicament.StatusAutorisation = med.StatusAutorisation
 		medicament.TypeProcedure = med.TypeProcedure
 		medicament.EtatComercialisation = med.EtatComercialisation
@@ -72,7 +78,9 @@ func parseAllMedicaments() []entities.Medicament{
 			defer wg.Done()
 			for _, v := range (conditions) {
 				if id == v.Cis {
-					medicament.Conditions = append(medicament.Conditions, v)
+					fmt.Println(v)
+					fmt.Println(v.Condition)
+					medicament.Conditions = append(medicament.Conditions, v.Condition)
 				}
 			}
 		}(med.Cis)
@@ -81,13 +89,13 @@ func parseAllMedicaments() []entities.Medicament{
 		medicamentsSlice = append(medicamentsSlice, *medicament)
 		
 	}
-	// jsonMedicament, err := json.MarshalIndent(medicamentsSlice, "", "  ")
-	// if err != nil {
-	// 	fmt.Println("error:", err)
-	// }
+	jsonMedicament, err := json.MarshalIndent(medicamentsSlice, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
 	
-	// _ = os.WriteFile("src/Medicaments.json", jsonMedicament, 0644)
-	// log.Println("Medicaments.json created")
+	_ = os.WriteFile("src/Medicaments.json", jsonMedicament, 0644)
+	log.Println("Medicaments.json created")
 	conditions = nil
 	presentations = nil
 	specialites = nil

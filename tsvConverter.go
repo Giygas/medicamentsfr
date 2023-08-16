@@ -184,7 +184,7 @@ func makeCompositions(wg *sync.WaitGroup) {
 			Cis: cis,
 			ElementParmaceutique: fields[1],
 			CodeSubstance: codeS,
-			VoiesAdministration: fields[3],
+			DenominationSubstance: fields[3],
 			Dosage: fields[4],
 			ReferenceDosage: fields[5],
 			NatureComposant: fields[6],
