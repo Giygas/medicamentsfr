@@ -1,1 +1,3 @@
-medicamentsparser/files/*.txt
+**/files/*.txt
+*/files/*.txt
+*.src/*.json

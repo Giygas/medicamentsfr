@@ -142,7 +142,7 @@ func ParseAllMedicaments() []entities.Medicament{
 	compositions = nil
 	
 	timeElapsed := time.Since(start)
-	fmt.Printf("The full database upgrade took: %s", timeElapsed)
+	fmt.Printf("The full database upgrade took: %s\n", timeElapsed)
 	
 	return medicamentsSlice
 }
