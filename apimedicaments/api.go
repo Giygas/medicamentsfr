@@ -31,6 +31,24 @@ func main() {
 	// Handler function that enforces rate limiting
 	rateLimitHandler := func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			
+			// Check the If-Modified-Since header, so if the user has the json cached, there's no need to
+			// discount tokens from bucket
+			ifModifiedSince := r.Header.Get("If-Modified-Since")
+			if ifModifiedSince != "" {
+				// Parse the If-Modified-Since date
+				ifModifiedSinceTime, err := http.ParseTime(ifModifiedSince)
+				if err == nil {
+					// Get the modification time of the file
+					fileInfo, err := os.Stat("./src/Medicaments.json")
+					if err == nil && fileInfo.ModTime().Before(ifModifiedSinceTime.Add(1*time.Second)) {
+						// If the file has not been modified since the If-Modified-Since date, return a 304 Not Modified response
+						w.WriteHeader(http.StatusNotModified)
+						return
+					}
+				}
+			}
+			
 			// Calculate the token cost for the request
 			tokenCost := tokenCostFunc(r)
 
