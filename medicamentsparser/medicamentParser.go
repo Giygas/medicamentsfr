@@ -11,13 +11,13 @@ import (
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 )
 
-func ParseAllMedicaments(){
-	
+func ParseAllMedicaments() {
+
 	start := time.Now()
-	
+
 	// Download the neccesary files from https://base-donnees-publique.medicaments.gouv.fr/telechargement.php
 	downloadAndParseAll()
-	
+
 	//Make all the json files concurrently
 	var wg sync.WaitGroup
 	wg.Add(5)
@@ -55,7 +55,7 @@ func ParseAllMedicaments(){
 	specialites := <-specialitesChan
 	generiques := <-generiquesChan
 	compositions := <-compositionsChan
-	
+
 	conditionsChan = nil
 	presentationsChan = nil
 	specialitesChan = nil
@@ -63,11 +63,11 @@ func ParseAllMedicaments(){
 	compositionsChan = nil
 
 	var medicamentsSlice []entities.Medicament
-	
+
 	for _, med := range specialites {
-		
+
 		medicament := new(entities.Medicament)
-		
+
 		medicament.Cis = med.Cis
 		medicament.Denomination = med.Denomination
 		medicament.FormePharmaceutique = med.FormePharmaceutique
@@ -75,73 +75,73 @@ func ParseAllMedicaments(){
 		medicament.StatusAutorisation = med.StatusAutorisation
 		medicament.TypeProcedure = med.TypeProcedure
 		medicament.EtatComercialisation = med.EtatComercialisation
-		medicament. DateAMM = med.DateAMM
+		medicament.DateAMM = med.DateAMM
 		medicament.Titulaire = med.Titulaire
 		medicament.SurveillanceRenforcee = med.SurveillanceRenforcee
-		
+
 		var wg sync.WaitGroup
-		
+
 		wg.Add(4)
 		// Get all the compositions of this medicament
-		go func (id int) {
+		go func(id int) {
 			defer wg.Done()
-			for _, v := range (compositions) {
+			for _, v := range compositions {
 				if id == v.Cis {
 					medicament.Composition = append(medicament.Composition, v)
 				}
 			}
 		}(med.Cis)
-		
+
 		// Get all the generiques of this medicament
-		go func (id int){
+		go func(id int) {
 			defer wg.Done()
-			for _, v := range (generiques) {
+			for _, v := range generiques {
 				if id == v.Cis {
 					medicament.Generiques = append(medicament.Generiques, v)
 				}
 			}
 		}(med.Cis)
-		
+
 		// Get all the presentations of thi medicament
 		go func(id int) {
 			defer wg.Done()
-			for _, v := range (presentations) {
+			for _, v := range presentations {
 				if id == v.Cis {
 					medicament.Presentation = append(medicament.Presentation, v)
 				}
 			}
 		}(med.Cis)
-		
+
 		// Get the conditions of this medicament
 		go func(id int) {
 			defer wg.Done()
-			for _, v := range (conditions) {
+			for _, v := range conditions {
 				if id == v.Cis {
 					medicament.Conditions = append(medicament.Conditions, v.Condition)
 				}
 			}
 		}(med.Cis)
-		
+
 		wg.Wait()
 		medicamentsSlice = append(medicamentsSlice, *medicament)
-		
+
 	}
-	
+
 	jsonMedicament, err := json.MarshalIndent(medicamentsSlice, "", "  ")
 	if err != nil {
 		fmt.Println("error:", err)
 	}
-	
+
 	_ = os.WriteFile("src/Medicaments.json", jsonMedicament, 0644)
 	log.Println("Medicaments.json created")
-	
+
 	conditions = nil
 	presentations = nil
 	specialites = nil
 	generiques = nil
 	compositions = nil
-	
+
 	timeElapsed := time.Since(start)
 	fmt.Printf("The full database upgrade took: %s\n", timeElapsed)
-	
+
 }
