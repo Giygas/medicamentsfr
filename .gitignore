@@ -1,3 +1,4 @@
 **/files/*.txt
 */files/*.txt
-*.src/*.json
+**src/*.json
+src/*
