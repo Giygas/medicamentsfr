@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/giygas/medicamentsfr/medicamentsparser"
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
@@ -19,6 +20,9 @@ func getDatabase(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("got / request\n")
 	val, err := json.MarshalIndent(medicos, "", "  ")
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	w.Header().Set("Expires", time.Now().Add(time.Hour).Format(http.TimeFormat))
+	w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
 	if err != nil {
 		io.WriteString(w, string(err.Error()))
 	}
@@ -36,7 +40,7 @@ func main() {
 		// Calculate the token cost based on the request properties
 		// Return the token cost for the request
 		if r.URL.Path == "/Medicaments.json" {
-			return 1000 // Higher token cost for expensive requests
+			return 500 // Higher token cost for expensive requests
 		}
 		return 15 // Default token cost for other requests
 	}
@@ -54,6 +58,10 @@ func main() {
 			}
 
 			// Serve the request
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.Header().Set("Cache-Control", "public, max-age=3600")
+			w.Header().Set("Expires", time.Now().Add(time.Hour).Format(http.TimeFormat))
+			w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
 			h.ServeHTTP(w, r)
 		})
 	}	
