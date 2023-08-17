@@ -1,36 +1,37 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
+	"runtime"
 	"time"
 
 	"github.com/giygas/medicamentsfr/medicamentsparser"
-	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 	"github.com/juju/ratelimit"
+	"github.com/jasonlvhit/gocron"
 )
 
-var medicos []entities.Medicament
-
-func getDatabase(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("got / request\n")
-	val, err := json.MarshalIndent(medicos, "", "  ")
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Header().Set("Cache-Control", "public, max-age=3600")
-	w.Header().Set("Expires", time.Now().Add(time.Hour).Format(http.TimeFormat))
-	w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
-	if err != nil {
-		io.WriteString(w, string(err.Error()))
-	}
-	io.WriteString(w, string(val))
+func PrintMemUsage() {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	fmt.Printf("Alloc = %v MiB", m.Alloc / 1024 / 1024)
+	fmt.Printf("\tTotalAlloc = %v MiB", m.TotalAlloc / 1024 / 1024)
+	fmt.Printf("\tSys = %v MiB", m.Sys / 1024 / 1024)
+	fmt.Printf("\tNumGC = %v\n", m.NumGC)
 }
 
+func executeCronJob() {
+	gocron.Every(1).Second().Do(PrintMemUsage)
+	<- gocron.Start()
+}
+
+
 func main() {
-	medicos = medicamentsparser.ParseAllMedicaments()
+	go executeCronJob()
+	
+	medicamentsparser.ParseAllMedicaments()
 	
 	//Create a bucket with a capacity of 1000 tokens and a replenishement rate of 30 per second
 	limiter := ratelimit.NewBucketWithRate(30, 1000)
