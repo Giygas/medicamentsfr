@@ -8,7 +8,7 @@ import (
 )
 
 func serveAllMedicaments(w http.ResponseWriter, r *http.Request) {
-	p, err := os.ReadFile("./src/Medicaments.json")
+	medicaments, err := os.ReadFile("./src/Medicaments.json")
 	if err != nil {
 		log.Fatal(err)
 		w.WriteHeader(500)
@@ -20,5 +20,5 @@ func serveAllMedicaments(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Expires", time.Now().Add(time.Hour).Format(http.TimeFormat))
 	w.Header().Add("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
 	w.WriteHeader(200)
-	w.Write(p)
+	w.Write(medicaments)
 }
