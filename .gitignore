@@ -2,3 +2,5 @@
 */files/*.txt
 **src/*.json
 src/*
+.env
+*.exe
