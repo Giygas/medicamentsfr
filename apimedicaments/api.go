@@ -1,3 +1,8 @@
+// TODO: Make a map of generiques with the format
+// [group]: []{cis, libelle} for searching by group
+// and for the libelle searching will just iterate
+// over this map of libelles -> include regexp
+
 package main
 
 import (
