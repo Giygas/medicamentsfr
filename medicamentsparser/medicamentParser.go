@@ -11,7 +11,7 @@ import (
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 )
 
-func ParseAllMedicaments() {
+func ParseAllMedicaments() []entities.Medicament {
 
 	start := time.Now()
 
@@ -144,4 +144,5 @@ func ParseAllMedicaments() {
 	timeElapsed := time.Since(start)
 	fmt.Printf("The full database upgrade took: %s\n", timeElapsed)
 
+	return medicamentsSlice
 }

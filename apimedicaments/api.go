@@ -8,10 +8,13 @@ import (
 	"os"
 
 	"github.com/giygas/medicamentsfr/medicamentsparser"
+	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 )
+
+var medicaments []entities.Medicament
 
 func main() {
 
@@ -26,7 +29,7 @@ func main() {
 		log.Fatal("PORT is not found in the evironment")
 	}
 
-	medicamentsparser.ParseAllMedicaments()
+	medicaments = medicamentsparser.ParseAllMedicaments()
 
 	router := chi.NewRouter()
 
@@ -47,6 +50,10 @@ func main() {
 	}
 
 	router.Get("/database", serveAllMedicaments)
+	// Search medicaments by elementPharmaceutique or cis
+	router.Get("/medicament/{cis}", findMedicament)
+	// Searh medicaments by generiques libelle or generiques group
+	router.Get("/generiques/{libelle}", findGeneriques)
 
 	fmt.Printf("Starting server at PORT: %v\n", portString)
 	err = server.ListenAndServe()
