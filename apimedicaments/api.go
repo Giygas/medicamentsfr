@@ -21,20 +21,24 @@ import (
 
 var medicaments []entities.Medicament
 
-func main() {
-
+func init() {
 	// Load the env variables
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Create the initial medicaments parsing
+	medicaments = medicamentsparser.ParseAllMedicaments()
+
+	go scheduleMedicaments()
+}
+
+func main() {
 
 	portString := os.Getenv("PORT")
 	if portString == "" {
 		log.Fatal("PORT is not found in the evironment")
 	}
-
-	medicaments = medicamentsparser.ParseAllMedicaments()
 
 	router := chi.NewRouter()
 
@@ -61,7 +65,7 @@ func main() {
 	router.Get("/generiques/{libelle}", findGeneriques)
 
 	fmt.Printf("Starting server at PORT: %v\n", portString)
-	err = server.ListenAndServe()
+	err := server.ListenAndServe()
 
 	if errors.Is(err, http.ErrServerClosed) {
 		fmt.Printf("server closed\n")
