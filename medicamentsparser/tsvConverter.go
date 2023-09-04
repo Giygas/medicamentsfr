@@ -119,10 +119,24 @@ func makeGeneriques(wg *sync.WaitGroup) []entities.Generique {
 			log.Fatal(err)
 		}
 
+		var generiqueType string
+
+		switch fields[3] {
+		case "0":
+			generiqueType = "Princeps"
+		case "1":
+			generiqueType = "Générique"
+		case "2":
+			generiqueType = "Génériques par complémentarité posologique"
+		case "3":
+			generiqueType = "Générique substitutable"
+		}
+
 		record := entities.Generique{
 			Cis:     cis,
 			Group:   group,
 			Libelle: fields[1],
+			Type:    generiqueType,
 		}
 
 		jsonRecords = append(jsonRecords, record)
