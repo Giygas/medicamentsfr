@@ -2,6 +2,7 @@ package medicamentsparser
 
 import (
 	"bufio"
+	"encoding/json"
 	"log"
 	"math"
 	"os"
@@ -103,7 +104,11 @@ func makeGeneriques(wg *sync.WaitGroup) []entities.Generique {
 
 	scanner := bufio.NewScanner(tsvFile)
 
+	// Create the variables to use in the loop
 	var jsonRecords []entities.Generique
+
+	// Use a map for creating the generiques list
+	generiquesList := make(map[int][]int)
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -140,9 +145,22 @@ func makeGeneriques(wg *sync.WaitGroup) []entities.Generique {
 		}
 
 		jsonRecords = append(jsonRecords, record)
+
+		// Append to the array of generiques
+		if cis != 0 {
+			generiquesList[group] = append(generiquesList[group], cis)
+		}
 	}
 
 	log.Println("Generiques done")
+
+	jsonGeneriques, err := json.MarshalIndent(generiquesList, "", "  ")
+	if err != nil {
+		log.Println("Error ocurred when marshalling generiques\n", err)
+	}
+	_ = os.WriteFile("src/Generiques.json", jsonGeneriques, 0644)
+	log.Println("Generiques.json created (List of generiques)")
+
 	return jsonRecords
 }
 
