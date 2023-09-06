@@ -59,15 +59,30 @@ func GeneriquesParser(medicaments *[]entities.Medicament) []entities.GeneriqueLi
 	return generiques
 }
 
+func createGeneriqueComposition(medicamentComposition *[]entities.Composition) []entities.GeneriqueComposition {
+	var compositions []entities.GeneriqueComposition
+	for _, v := range *medicamentComposition {
+		compo := entities.GeneriqueComposition{
+			ElementParmaceutique:  v.ElementParmaceutique,
+			DenominationSubstance: v.DenominationSubstance,
+			Dosage:                v.Dosage,
+		}
+		compositions = append(compositions, compo)
+	}
+	return compositions
+}
+
 func getMedicamentsInArray(medicamentsIds []int, medicaments *[]entities.Medicament, medicamentMap map[int]*entities.Medicament) []entities.GeneriqueMedicament {
 	var medicamentsArray []entities.GeneriqueMedicament
 
 	for _, v := range medicamentsIds {
 		if medicament, ok := medicamentMap[v]; ok {
+			generiqueComposition := createGeneriqueComposition(&medicament.Composition)
 			generiqueMed := entities.GeneriqueMedicament{
 				Cis:                 (medicament.Cis),
 				Denomination:        (medicament.Denomination),
 				FormePharmaceutique: (medicament.FormePharmaceutique),
+				Composition:         generiqueComposition,
 			}
 			medicamentsArray = append(medicamentsArray, generiqueMed)
 		}
