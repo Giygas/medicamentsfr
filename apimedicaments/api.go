@@ -1,19 +1,12 @@
-// TODO: Make a map of generiques with the format
-// [group]: []{cis, libelle} for searching by group
-// and for the libelle searching will just iterate
-// over this map of libelles -> include regexp
-
 package main
 
 import (
-	// "errors"
+	"errors"
 	"fmt"
 	"log"
-
-	// "net/http"
+	"net/http"
 	"os"
 
-	// "github.com/giygas/medicamentsfr/medicamentsparser"
 	"github.com/giygas/medicamentsfr/medicamentsparser"
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 	"github.com/go-chi/chi"
@@ -69,10 +62,10 @@ func main() {
 
 	router.Use(rateLimitHandler)
 
-	// server := &http.Server{
-	// 	Handler: router,
-	// 	Addr:    ":" + portString,
-	// }
+	server := &http.Server{
+		Handler: router,
+		Addr:    ":" + portString,
+	}
 
 	router.Get("/database", serveAllMedicaments)
 	// Search medicaments by elementPharmaceutique or cis
@@ -81,12 +74,12 @@ func main() {
 	router.Get("/generiques/{libelle}", findGeneriques)
 
 	fmt.Printf("Starting server at PORT: %v\n", portString)
-	// err := server.ListenAndServe()
+	err := server.ListenAndServe()
 
-	// if errors.Is(err, http.ErrServerClosed) {
-	// 	fmt.Printf("server closed\n")
-	// } else if err != nil {
-	// 	fmt.Printf("error starting server: %s\n", err)
-	// 	os.Exit(1)
-	// }
+	if errors.Is(err, http.ErrServerClosed) {
+		fmt.Printf("server closed\n")
+	} else if err != nil {
+		fmt.Printf("error starting server: %s\n", err)
+		os.Exit(1)
+	}
 }
