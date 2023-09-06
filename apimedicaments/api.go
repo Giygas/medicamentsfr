@@ -16,6 +16,7 @@ import (
 
 var medicaments []entities.Medicament
 var generiques []entities.GeneriqueList
+var medicamentsMap = make(map[int]entities.Medicament)
 
 func checkMedicaments(medicaments *[]entities.Medicament) {
 	if len(*medicaments) == 0 {
@@ -29,6 +30,7 @@ func checkMedicaments(medicaments *[]entities.Medicament) {
 		}
 	}
 }
+
 func init() {
 	// Load the env variables
 	err := godotenv.Load()
@@ -38,7 +40,11 @@ func init() {
 	// Create the initial medicaments parsing
 	medicaments = medicamentsparser.ParseAllMedicaments()
 	checkMedicaments(&medicaments)
-	generiques = medicamentsparser.GeneriquesParser(&medicaments)
+	// Create a map of all medicaments to reduce algorithm complexity
+	for i := range medicaments {
+		medicamentsMap[(medicaments)[i].Cis] = (medicaments)[i]
+	}
+	generiques = medicamentsparser.GeneriquesParser(&medicaments, &medicamentsMap)
 	// go scheduleMedicaments()
 }
 
@@ -68,10 +74,10 @@ func main() {
 	}
 
 	router.Get("/database", serveAllMedicaments)
-	// Search medicaments by elementPharmaceutique or cis
-	router.Get("/medicament/{cis}", findMedicament)
-	// Searh medicaments by generiques libelle or generiques group
+	router.Get("/medicament/{element}", findMedicament)
+	router.Get("/medicament/id/{cis}", findMedicamentById)
 	router.Get("/generiques/{libelle}", findGeneriques)
+	router.Get("/generiques/group/{groupId}", findGeneriquesById)
 
 	fmt.Printf("Starting server at PORT: %v\n", portString)
 	err := server.ListenAndServe()

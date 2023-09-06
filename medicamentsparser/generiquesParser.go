@@ -12,13 +12,9 @@ import (
 
 var generiquesList []entities.GeneriqueList
 
-func GeneriquesParser(medicaments *[]entities.Medicament) []entities.GeneriqueList {
+func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities.Medicament) []entities.GeneriqueList {
 
 	// Create a map of all the medicaments cis to reduce algorithm complexity
-	medicamentMap := make(map[int]*entities.Medicament)
-	for i := range *medicaments {
-		medicamentMap[(*medicaments)[i].Cis] = &(*medicaments)[i]
-	}
 
 	// allGeneriques: []Generique
 	allGeneriques := makeGeneriques(nil)
@@ -44,7 +40,7 @@ func GeneriquesParser(medicaments *[]entities.Medicament) []entities.GeneriqueLi
 		current := entities.GeneriqueList{
 			GroupId:     groupInt,
 			Libelle:     generiquesMap[groupInt].Libelle,
-			Medicaments: getMedicamentsInArray(v, medicaments, medicamentMap),
+			Medicaments: getMedicamentsInArray(v, medicaments, mMap),
 		}
 
 		generiques = append(generiques, current)
@@ -72,11 +68,11 @@ func createGeneriqueComposition(medicamentComposition *[]entities.Composition) [
 	return compositions
 }
 
-func getMedicamentsInArray(medicamentsIds []int, medicaments *[]entities.Medicament, medicamentMap map[int]*entities.Medicament) []entities.GeneriqueMedicament {
+func getMedicamentsInArray(medicamentsIds []int, medicaments *[]entities.Medicament, medicamentMap *map[int]entities.Medicament) []entities.GeneriqueMedicament {
 	var medicamentsArray []entities.GeneriqueMedicament
 
 	for _, v := range medicamentsIds {
-		if medicament, ok := medicamentMap[v]; ok {
+		if medicament, ok := (*medicamentMap)[v]; ok {
 			generiqueComposition := createGeneriqueComposition(&medicament.Composition)
 			generiqueMed := entities.GeneriqueMedicament{
 				Cis:                 (medicament.Cis),
