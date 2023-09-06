@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 
+	// "github.com/giygas/medicamentsfr/medicamentsparser"
 	"github.com/giygas/medicamentsfr/medicamentsparser"
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 	"github.com/go-chi/chi"
@@ -20,7 +21,20 @@ import (
 )
 
 var medicaments []entities.Medicament
+var generiques []entities.GeneriqueList
 
+func checkMedicaments(medicaments *[]entities.Medicament) {
+	if len(*medicaments) == 0 {
+		fmt.Println("medicaments slice is empty")
+		return
+	}
+
+	for i, medicament := range *medicaments {
+		if medicament.Cis == 0 {
+			fmt.Printf("medicament at index %d has Cis set to 0\n", i)
+		}
+	}
+}
 func init() {
 	// Load the env variables
 	err := godotenv.Load()
@@ -29,8 +43,9 @@ func init() {
 	}
 	// Create the initial medicaments parsing
 	medicaments = medicamentsparser.ParseAllMedicaments()
-
-	go scheduleMedicaments()
+	checkMedicaments(&medicaments)
+	generiques = medicamentsparser.GeneriquesParser(&medicaments)
+	// go scheduleMedicaments()
 }
 
 func main() {

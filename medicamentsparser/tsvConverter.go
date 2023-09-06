@@ -94,7 +94,9 @@ func makePresentations(wg *sync.WaitGroup) []entities.Presentation {
 }
 
 func makeGeneriques(wg *sync.WaitGroup) []entities.Generique {
-	defer wg.Done()
+	if wg != nil {
+		defer wg.Done()
+	}
 
 	tsvFile, err := os.Open("files/Generiques.txt")
 	if err != nil {

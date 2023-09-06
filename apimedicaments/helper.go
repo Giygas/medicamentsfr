@@ -16,6 +16,7 @@ func scheduleMedicaments() {
 	s.Every(1).Day().Do(func() {
 		log.Println("Staring cron job")
 		medicaments = medicamentsparser.ParseAllMedicaments()
+		generiques = medicamentsparser.GeneriquesParser(&medicaments)
 	})
 
 }

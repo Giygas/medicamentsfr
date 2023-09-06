@@ -56,13 +56,14 @@ func conditionFileToJSON() []entities.Condition {
 	return data
 }
 
-func generiqueFileToJSON() []entities.Generique {
+func generiqueFileToJSON() map[string][]int {
 	fileData, err := os.ReadFile("src/Generiques.json")
 	if err != nil {
 		log.Fatal("Error reading file:", err)
 	}
 
-	var data []entities.Generique
+	var data map[string][]int
+
 	err = json.Unmarshal(fileData, &data)
 	if err != nil {
 		log.Fatal("Error decoding JSON:", err)
