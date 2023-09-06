@@ -1,9 +1,8 @@
 package entities
 
 type GeneriqueList struct {
-	GroupId     int                   `json:"groupid"`
+	GroupId     int                   `json:"groupId"`
 	Libelle     string                `json:"libelle"`
-	Type        string                `json:"type"`
 	Medicaments []GeneriqueMedicament `json:"medicaments"`
 }
 
