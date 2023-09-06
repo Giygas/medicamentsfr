@@ -22,19 +22,30 @@ func GeneriquesParser(medicaments *[]entities.Medicament) []entities.GeneriqueLi
 
 	// allGeneriques: []Generique
 	allGeneriques := makeGeneriques(nil)
+	// Create a map of all the generiques to reduce algorithm complexity
+	generiquesMap := make(map[int]entities.Generique)
+	for i := range allGeneriques {
+		generiquesMap[allGeneriques[i].Group] = allGeneriques[i]
+	}
+
 	// generiques file: [groupid]:[]cis of medicaments in the same group
-	//TODO: remove duplicates of groupid
 	generiquesFile := generiqueFileToJSON()
 
 	var generiques []entities.GeneriqueList
-	for _, v := range allGeneriques {
-		stringGroup := strconv.Itoa(v.Group)
+
+	for i, v := range generiquesFile {
+
+		// Convert the string index to integer
+		groupInt, err := strconv.Atoi(i)
+		if err != nil {
+			log.Println("An error ocurred converting the generiques group to integer", err)
+		}
 
 		current := entities.GeneriqueList{
-			GroupId:     v.Group,
-			Libelle:     v.Libelle,
-			Type:        v.Type,
-			Medicaments: getMedicamentsInArray(generiquesFile[stringGroup], medicaments, medicamentMap),
+			GroupId:     groupInt,
+			Libelle:     generiquesMap[groupInt].Libelle,
+			Type:        generiquesMap[groupInt].Type,
+			Medicaments: getMedicamentsInArray(v, medicaments, medicamentMap),
 		}
 
 		generiques = append(generiques, current)
@@ -49,12 +60,17 @@ func GeneriquesParser(medicaments *[]entities.Medicament) []entities.GeneriqueLi
 	return generiques
 }
 
-func getMedicamentsInArray(medicamentsIds []int, medicaments *[]entities.Medicament, medicamentMap map[int]*entities.Medicament) []entities.Medicament {
-	var medicamentsArray []entities.Medicament
+func getMedicamentsInArray(medicamentsIds []int, medicaments *[]entities.Medicament, medicamentMap map[int]*entities.Medicament) []entities.GeneriqueMedicament {
+	var medicamentsArray []entities.GeneriqueMedicament
 
 	for _, v := range medicamentsIds {
 		if medicament, ok := medicamentMap[v]; ok {
-			medicamentsArray = append(medicamentsArray, *medicament)
+			generiqueMed := entities.GeneriqueMedicament{
+				Cis:                 (medicament.Cis),
+				Denomination:        (medicament.Denomination),
+				FormePharmaceutique: (medicament.FormePharmaceutique),
+			}
+			medicamentsArray = append(medicamentsArray, generiqueMed)
 		}
 	}
 
