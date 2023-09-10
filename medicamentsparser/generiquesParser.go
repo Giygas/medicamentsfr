@@ -11,11 +11,9 @@ import (
 )
 
 var generiquesList []entities.GeneriqueList
+var medsType map[int]string
 
 func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities.Medicament) []entities.GeneriqueList {
-
-	// Create a map of all the medicaments cis to reduce algorithm complexity
-
 	// allGeneriques: []Generique
 	allGeneriques := makeGeneriques(nil)
 	// Create a map of all the generiques to reduce algorithm complexity
@@ -26,6 +24,8 @@ func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities
 
 	// generiques file: [groupid]:[]cis of medicaments in the same group
 	generiquesFile := generiqueFileToJSON()
+
+	medsType = createMedicamentGeneriqueType()
 
 	var generiques []entities.GeneriqueList
 
@@ -78,6 +78,7 @@ func getMedicamentsInArray(medicamentsIds []int, medicaments *[]entities.Medicam
 				Cis:                 (medicament.Cis),
 				Denomination:        (medicament.Denomination),
 				FormePharmaceutique: (medicament.FormePharmaceutique),
+				Type:                medsType[medicament.Cis],
 				Composition:         generiqueComposition,
 			}
 			medicamentsArray = append(medicamentsArray, generiqueMed)

@@ -10,6 +10,7 @@ type GeneriqueMedicament struct {
 	Cis                 int                    `json:"cis"`
 	Denomination        string                 `json:"elementPharmaceutique"`
 	FormePharmaceutique string                 `json:"formePharmaceutique"`
+	Type                string                 `json:"type"`
 	Composition         []GeneriqueComposition `json:"composition"`
 }
 

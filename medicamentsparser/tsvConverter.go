@@ -285,3 +285,43 @@ func makeConditions(wg *sync.WaitGroup) []entities.Condition {
 	log.Println("Conditions done")
 	return jsonRecords
 }
+
+func createMedicamentGeneriqueType() map[int]string {
+	medsType := make(map[int]string)
+
+	tsvFile, err := os.Open("files/Generiques.txt")
+	if err != nil {
+		log.Fatal("Error opening file", err)
+	}
+	defer tsvFile.Close()
+
+	scanner := bufio.NewScanner(tsvFile)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Split(line, "\t")
+
+		cis, err := strconv.Atoi(fields[2])
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var generiqueType string
+
+		switch fields[3] {
+		case "0":
+			generiqueType = "Princeps"
+		case "1":
+			generiqueType = "Générique"
+		case "2":
+			generiqueType = "Génériques par complémentarité posologique"
+		case "3":
+			generiqueType = "Générique substitutable"
+		}
+
+		medsType[cis] = generiqueType
+
+	}
+
+	return medsType
+}
