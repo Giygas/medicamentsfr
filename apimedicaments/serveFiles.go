@@ -40,25 +40,25 @@ func findMedicamentById(w http.ResponseWriter, r *http.Request) {
 
 	medicament, ok := medicamentsMap[cis]
 	if ok {
-		w.Header().Add("Content-Type", "application/json; charset=utf-8")
-		w.Header().Add("Cache-Control", "public, max-age=3600")
-		w.Header().Add("Expires", time.Now().Add(time.Hour).Format(http.TimeFormat))
-		w.Header().Add("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
-		response, err := json.Marshal(medicament)
-		if err != nil {
-			w.WriteHeader(500)
-			log.Fatal("An error has ocurred when marshalling the medicament", err)
-		} else {
-			w.WriteHeader(200)
-			w.Write(response)
-		}
+		respondWithJSON(w, 200, medicament)
 	}
+	respondWithError(w, 404, "No medicaments found with this cis")
 }
 
 func findGeneriques(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func findGeneriquesById(w http.ResponseWriter, r *http.Request) {
+func findGeneriquesByGroupId(w http.ResponseWriter, r *http.Request) {
+	groupId, err := strconv.Atoi(chi.URLParam(r, "groupId"))
+	if err != nil {
+		log.Fatal("An error ocurred when getting the medicament cis", groupId)
+	}
 
+	generique, ok := generiquesMap[groupId]
+	if ok {
+		respondWithJSON(w, 200, generique)
+	} else {
+		respondWithError(w, 404, "There are no medicaments in this group")
+	}
 }

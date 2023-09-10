@@ -17,6 +17,7 @@ import (
 var medicaments []entities.Medicament
 var generiques []entities.GeneriqueList
 var medicamentsMap = make(map[int]entities.Medicament)
+var generiquesMap = make(map[int]entities.Generique)
 
 func checkMedicaments(medicaments *[]entities.Medicament) {
 	if len(*medicaments) == 0 {
@@ -44,7 +45,8 @@ func init() {
 	for i := range medicaments {
 		medicamentsMap[(medicaments)[i].Cis] = (medicaments)[i]
 	}
-	generiques = medicamentsparser.GeneriquesParser(&medicaments, &medicamentsMap)
+	generiques, generiquesMap = medicamentsparser.GeneriquesParser(&medicaments, &medicamentsMap)
+
 	// go scheduleMedicaments()
 }
 
@@ -77,7 +79,7 @@ func main() {
 	router.Get("/medicament/{element}", findMedicament)
 	router.Get("/medicament/id/{cis}", findMedicamentById)
 	router.Get("/generiques/{libelle}", findGeneriques)
-	router.Get("/generiques/group/{groupId}", findGeneriquesById)
+	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupId)
 
 	fmt.Printf("Starting server at PORT: %v\n", portString)
 	err := server.ListenAndServe()

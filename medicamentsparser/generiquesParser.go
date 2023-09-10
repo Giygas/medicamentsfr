@@ -13,7 +13,7 @@ import (
 var generiquesList []entities.GeneriqueList
 var medsType map[int]string
 
-func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities.Medicament) []entities.GeneriqueList {
+func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities.Medicament) ([]entities.GeneriqueList, map[int]entities.Generique) {
 	// allGeneriques: []Generique
 	allGeneriques := makeGeneriques(nil)
 	// Create a map of all the generiques to reduce algorithm complexity
@@ -54,7 +54,7 @@ func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities
 	}
 	_ = os.WriteFile("src/GeneriquesFull.json", marshalledGeneriques, 0644)
 	fmt.Println("GeneriquesFull.json created")
-	return generiques
+	return generiques, generiquesMap
 }
 
 func createGeneriqueComposition(medicamentComposition *[]entities.Composition) []entities.GeneriqueComposition {
