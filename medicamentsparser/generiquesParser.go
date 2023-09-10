@@ -25,6 +25,8 @@ func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities
 	// generiques file: [groupid]:[]cis of medicaments in the same group
 	generiquesFile := generiqueFileToJSON()
 
+	// The medsType is a map where the key are the medicament cis and the value is the
+	// type of generique
 	medsType = createMedicamentGeneriqueType()
 
 	var generiques []entities.GeneriqueList

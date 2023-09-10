@@ -286,6 +286,8 @@ func makeConditions(wg *sync.WaitGroup) []entities.Condition {
 	return jsonRecords
 }
 
+// Creates a mapping where the key is the medicament cis and the value is the type of generique of the medicament
+// Returns a map where key:cis and value:typeOfGenerique
 func createMedicamentGeneriqueType() map[int]string {
 	medsType := make(map[int]string)
 
@@ -320,7 +322,6 @@ func createMedicamentGeneriqueType() map[int]string {
 		}
 
 		medsType[cis] = generiqueType
-
 	}
 
 	return medsType
