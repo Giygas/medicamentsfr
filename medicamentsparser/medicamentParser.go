@@ -6,15 +6,11 @@ import (
 	"log"
 	"os"
 	"sync"
-	"time"
 
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 )
 
 func ParseAllMedicaments() []entities.Medicament {
-
-	start := time.Now()
-
 	// Download the neccesary files from https://base-donnees-publique.medicaments.gouv.fr/telechargement.php
 	downloadAndParseAll()
 
@@ -140,9 +136,6 @@ func ParseAllMedicaments() []entities.Medicament {
 	specialites = nil
 	generiques = nil
 	compositions = nil
-
-	timeElapsed := time.Since(start)
-	fmt.Printf("The full database upgrade took: %s\n", timeElapsed)
 
 	return medicamentsSlice
 }
