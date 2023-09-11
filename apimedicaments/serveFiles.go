@@ -41,8 +41,9 @@ func findMedicamentById(w http.ResponseWriter, r *http.Request) {
 	medicament, ok := medicamentsMap[cis]
 	if ok {
 		respondWithJSON(w, 200, medicament)
+	} else {
+		respondWithError(w, 404, "No medicaments found with this cis")
 	}
-	respondWithError(w, 404, "No medicaments found with this cis")
 }
 
 func findGeneriques(w http.ResponseWriter, r *http.Request) {

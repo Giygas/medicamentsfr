@@ -7,30 +7,16 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/giygas/medicamentsfr/medicamentsparser"
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 )
 
-var medicaments []entities.Medicament
-var generiques []entities.GeneriqueList
+var medicaments = make([]entities.Medicament, 0)
+var generiques = make([]entities.GeneriqueList, 0)
 var medicamentsMap = make(map[int]entities.Medicament)
 var generiquesMap = make(map[int]entities.Generique)
-
-func checkMedicaments(medicaments *[]entities.Medicament) {
-	if len(*medicaments) == 0 {
-		fmt.Println("medicaments slice is empty")
-		return
-	}
-
-	for i, medicament := range *medicaments {
-		if medicament.Cis == 0 {
-			fmt.Printf("medicament at index %d has Cis set to 0\n", i)
-		}
-	}
-}
 
 func init() {
 	// Load the env variables
@@ -38,16 +24,8 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Create the initial medicaments parsing
-	medicaments = medicamentsparser.ParseAllMedicaments()
-	checkMedicaments(&medicaments)
-	// Create a map of all medicaments to reduce algorithm complexity
-	for i := range medicaments {
-		medicamentsMap[(medicaments)[i].Cis] = (medicaments)[i]
-	}
-	generiques, generiquesMap = medicamentsparser.GeneriquesParser(&medicaments, &medicamentsMap)
 
-	// go scheduleMedicaments()
+	go scheduleMedicaments(&medicaments, &medicamentsMap, &generiques, &generiquesMap)
 }
 
 func main() {
