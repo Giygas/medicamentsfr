@@ -14,5 +14,5 @@ type Medicament struct {
 	Composition           []Composition  `json:"composition"`
 	Generiques            []Generique    `json:"generiques"`
 	Presentation          []Presentation `json:"presentation"`
-	Conditions            []string    `json:"conditions"`
+	Conditions            []string       `json:"conditions"`
 }

@@ -2,6 +2,7 @@ package medicamentsparser
 
 import (
 	"bufio"
+	"encoding/json"
 	"log"
 	"math"
 	"os"
@@ -93,7 +94,9 @@ func makePresentations(wg *sync.WaitGroup) []entities.Presentation {
 }
 
 func makeGeneriques(wg *sync.WaitGroup) []entities.Generique {
-	defer wg.Done()
+	if wg != nil {
+		defer wg.Done()
+	}
 
 	tsvFile, err := os.Open("files/Generiques.txt")
 	if err != nil {
@@ -103,7 +106,11 @@ func makeGeneriques(wg *sync.WaitGroup) []entities.Generique {
 
 	scanner := bufio.NewScanner(tsvFile)
 
+	// Create the variables to use in the loop
 	var jsonRecords []entities.Generique
+
+	// Use a map for creating the generiques list
+	generiquesList := make(map[int][]int)
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -119,16 +126,43 @@ func makeGeneriques(wg *sync.WaitGroup) []entities.Generique {
 			log.Fatal(err)
 		}
 
+		var generiqueType string
+
+		switch fields[3] {
+		case "0":
+			generiqueType = "Princeps"
+		case "1":
+			generiqueType = "Générique"
+		case "2":
+			generiqueType = "Génériques par complémentarité posologique"
+		case "3":
+			generiqueType = "Générique substitutable"
+		}
+
 		record := entities.Generique{
 			Cis:     cis,
 			Group:   group,
 			Libelle: fields[1],
+			Type:    generiqueType,
 		}
 
 		jsonRecords = append(jsonRecords, record)
+
+		// Append to the array of generiques
+		if cis != 0 {
+			generiquesList[group] = append(generiquesList[group], cis)
+		}
 	}
 
 	log.Println("Generiques done")
+
+	jsonGeneriques, err := json.MarshalIndent(generiquesList, "", "  ")
+	if err != nil {
+		log.Println("Error ocurred when marshalling generiques\n", err)
+	}
+	_ = os.WriteFile("src/Generiques.json", jsonGeneriques, 0644)
+	log.Println("Generiques.json created (List of generiques)")
+
 	return jsonRecords
 }
 
@@ -250,4 +284,45 @@ func makeConditions(wg *sync.WaitGroup) []entities.Condition {
 
 	log.Println("Conditions done")
 	return jsonRecords
+}
+
+// Creates a mapping where the key is the medicament cis and the value is the type of generique of the medicament
+// Returns a map where key:cis and value:typeOfGenerique
+func createMedicamentGeneriqueType() map[int]string {
+	medsType := make(map[int]string)
+
+	tsvFile, err := os.Open("files/Generiques.txt")
+	if err != nil {
+		log.Fatal("Error opening file", err)
+	}
+	defer tsvFile.Close()
+
+	scanner := bufio.NewScanner(tsvFile)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Split(line, "\t")
+
+		cis, err := strconv.Atoi(fields[2])
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var generiqueType string
+
+		switch fields[3] {
+		case "0":
+			generiqueType = "Princeps"
+		case "1":
+			generiqueType = "Générique"
+		case "2":
+			generiqueType = "Génériques par complémentarité posologique"
+		case "3":
+			generiqueType = "Générique substitutable"
+		}
+
+		medsType[cis] = generiqueType
+	}
+
+	return medsType
 }

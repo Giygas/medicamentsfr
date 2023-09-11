@@ -1,8 +1,3 @@
-// TODO: Make a map of generiques with the format
-// [group]: []{cis, libelle} for searching by group
-// and for the libelle searching will just iterate
-// over this map of libelles -> include regexp
-
 package main
 
 import (
@@ -12,29 +7,33 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/giygas/medicamentsfr/medicamentsparser"
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 )
 
-var medicaments []entities.Medicament
+var medicaments = make([]entities.Medicament, 0)
+var generiques = make([]entities.GeneriqueList, 0)
+var medicamentsMap = make(map[int]entities.Medicament)
+var generiquesMap = make(map[int]entities.Generique)
 
-func main() {
-
+func init() {
 	// Load the env variables
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	go scheduleMedicaments(&medicaments, &medicamentsMap, &generiques, &generiquesMap)
+}
+
+func main() {
+
 	portString := os.Getenv("PORT")
 	if portString == "" {
 		log.Fatal("PORT is not found in the evironment")
 	}
-
-	medicaments = medicamentsparser.ParseAllMedicaments()
 
 	router := chi.NewRouter()
 
@@ -55,13 +54,13 @@ func main() {
 	}
 
 	router.Get("/database", serveAllMedicaments)
-	// Search medicaments by elementPharmaceutique or cis
-	router.Get("/medicament/{cis}", findMedicament)
-	// Searh medicaments by generiques libelle or generiques group
+	router.Get("/medicament/{element}", findMedicament)
+	router.Get("/medicament/id/{cis}", findMedicamentById)
 	router.Get("/generiques/{libelle}", findGeneriques)
+	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupId)
 
 	fmt.Printf("Starting server at PORT: %v\n", portString)
-	err = server.ListenAndServe()
+	err := server.ListenAndServe()
 
 	if errors.Is(err, http.ErrServerClosed) {
 		fmt.Printf("server closed\n")

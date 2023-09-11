@@ -1,23 +1,17 @@
 package main
 
 import (
-	// "log"
 	"encoding/json"
 	"log"
 	"net/http"
-
-	// "os"
+	"strconv"
 	"time"
+
+	"github.com/go-chi/chi"
 )
 
 func serveAllMedicaments(w http.ResponseWriter, r *http.Request) {
 	meds := &medicaments
-
-	// medicaments, err := os.ReadFile("./src/Medicaments.json")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// 	w.WriteHeader(500)
-	// }
 
 	parsedJson, err := json.Marshal(meds)
 	if err != nil {
@@ -38,6 +32,34 @@ func findMedicament(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func findMedicamentById(w http.ResponseWriter, r *http.Request) {
+	cis, err := strconv.Atoi(chi.URLParam(r, "cis"))
+	if err != nil {
+		log.Fatal("An error ocurred when getting the medicament cis", cis)
+	}
+
+	medicament, ok := medicamentsMap[cis]
+	if ok {
+		respondWithJSON(w, 200, medicament)
+	} else {
+		respondWithError(w, 404, "No medicaments found with this cis")
+	}
+}
+
 func findGeneriques(w http.ResponseWriter, r *http.Request) {
 
+}
+
+func findGeneriquesByGroupId(w http.ResponseWriter, r *http.Request) {
+	groupId, err := strconv.Atoi(chi.URLParam(r, "groupId"))
+	if err != nil {
+		log.Fatal("An error ocurred when getting the medicament cis", groupId)
+	}
+
+	generique, ok := generiquesMap[groupId]
+	if ok {
+		respondWithJSON(w, 200, generique)
+	} else {
+		respondWithError(w, 404, "There are no medicaments in this group")
+	}
 }
