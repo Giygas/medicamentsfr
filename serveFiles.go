@@ -42,27 +42,6 @@ func findMedicament(w http.ResponseWriter, r *http.Request) {
 
 			// For now I'll just use the medicament denomination
 			medOk := pattern.MatchString(med.Denomination)
-			// compoOk := func() bool {
-			// 	for _, v := range med.Composition {
-			// 		if pattern.MatchString(v.DenominationSubstance) {
-			// 			return true
-			// 		}
-			// 	}
-			// 	return false
-			// }()
-			// geneOk := func() bool {
-			// 	for _, g := range med.Generiques {
-			// 		if pattern.MatchString(g.Libelle) {
-			// 			return true
-			// 		}
-			// 	}
-			// 	return false
-			// }()
-
-			// If any of the fiels matches the description, append to the output array
-			// if medOk || compoOk || geneOk {
-			// 	matchingMedicaments = append(matchingMedicaments, med)
-			// }
 			if medOk {
 				matchingMedicaments = append(matchingMedicaments, med)
 			}
