@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 	"github.com/go-chi/chi"
@@ -19,10 +20,21 @@ var medicamentsMap = make(map[int]entities.Medicament)
 var generiquesMap = make(map[int]entities.Generique)
 
 func init() {
-	// Load the env variables
-	err := godotenv.Load()
+	// Get the working directory and read the env variables
+	ex, err := os.Executable()
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	exPath := filepath.Dir(ex)
+
+	err = os.Chdir(exPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatal(err, "Error loading the .env file")
 	}
 
 	go scheduleMedicaments(&medicaments, &medicamentsMap, &generiques, &generiquesMap)
