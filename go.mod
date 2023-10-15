@@ -6,7 +6,6 @@ require (
 	github.com/go-chi/chi v1.5.4
 	github.com/go-chi/cors v1.2.1
 	github.com/go-co-op/gocron v1.32.1
-	github.com/joho/godotenv v1.5.1
 	github.com/juju/ratelimit v1.0.2
 	golang.org/x/text v0.12.0
 )

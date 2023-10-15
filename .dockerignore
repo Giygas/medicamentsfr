@@ -1,0 +1,80 @@
+# flyctl launch added from .gitignore
+**/**/files/*.txt
+**/*/files/*.txt
+**/**src/*.json
+**/src/*
+**/.env
+**/*.exe
+**/.DS_Store
+**/medicamentsfr
+
+# flyctl launch added from vendor/github.com/go-chi/chi/.gitignore
+vendor/github.com/go-chi/chi/**/.idea
+vendor/github.com/go-chi/chi/**/*.sw?
+vendor/github.com/go-chi/chi/**/.vscode
+
+# flyctl launch added from vendor/github.com/go-co-op/gocron/.gitignore
+# Binaries for programs and plugins
+vendor/github.com/go-co-op/gocron/**/*.exe
+vendor/github.com/go-co-op/gocron/**/*.exe~
+vendor/github.com/go-co-op/gocron/**/*.dll
+vendor/github.com/go-co-op/gocron/**/*.so
+vendor/github.com/go-co-op/gocron/**/*.dylib
+
+# Test binary, built with `go test -c`
+vendor/github.com/go-co-op/gocron/**/*.test
+vendor/github.com/go-co-op/gocron/**/local_testing
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+vendor/github.com/go-co-op/gocron/**/*.out
+
+# Dependency directories (remove the comment below to include it)
+vendor/github.com/go-co-op/gocron/**/vendor
+
+# IDE project files
+vendor/github.com/go-co-op/gocron/**/.idea
+
+# flyctl launch added from vendor/github.com/joho/godotenv/.gitignore
+vendor/github.com/joho/godotenv/**/.DS_Store
+
+# flyctl launch added from vendor/github.com/robfig/cron/v3/.gitignore
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+vendor/github.com/robfig/cron/v3/**/*.o
+vendor/github.com/robfig/cron/v3/**/*.a
+vendor/github.com/robfig/cron/v3/**/*.so
+
+# Folders
+vendor/github.com/robfig/cron/v3/**/_obj
+vendor/github.com/robfig/cron/v3/**/_test
+
+# Architecture specific extensions/prefixes
+vendor/github.com/robfig/cron/v3/**/*.[568vq]
+vendor/github.com/robfig/cron/v3/**/[568vq].out
+
+vendor/github.com/robfig/cron/v3/**/*.cgo1.go
+vendor/github.com/robfig/cron/v3/**/*.cgo2.c
+vendor/github.com/robfig/cron/v3/**/_cgo_defun.c
+vendor/github.com/robfig/cron/v3/**/_cgo_gotypes.go
+vendor/github.com/robfig/cron/v3/**/_cgo_export.*
+
+vendor/github.com/robfig/cron/v3/**/_testmain.go
+
+vendor/github.com/robfig/cron/v3/**/*.exe
+
+# flyctl launch added from vendor/go.uber.org/atomic/.gitignore
+vendor/go.uber.org/atomic/bin
+vendor/go.uber.org/atomic/**/.DS_Store
+vendor/go.uber.org/atomic/vendor
+vendor/go.uber.org/atomic/**/cover.html
+vendor/go.uber.org/atomic/**/cover.out
+vendor/go.uber.org/atomic/**/lint.log
+
+# Binaries
+vendor/go.uber.org/atomic/**/*.test
+
+# Profiling output
+vendor/go.uber.org/atomic/**/*.prof
+
+# Output of fossa analyzer
+vendor/go.uber.org/atomic/fossa
+fly.toml

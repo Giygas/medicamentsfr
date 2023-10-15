@@ -7,10 +7,12 @@ import (
 	"net/http"
 	"os"
 
+	// "path/filepath"
+
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 )
 
 var medicaments = make([]entities.Medicament, 0)
@@ -19,11 +21,23 @@ var medicamentsMap = make(map[int]entities.Medicament)
 var generiquesMap = make(map[int]entities.Generique)
 
 func init() {
-	// Load the env variables
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// Get the working directory and read the env variables
+	// Does not work for production
+	// ex, err := os.Executable()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	// exPath := filepath.Dir(ex)
+
+	// err = os.Chdir(exPath)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// err = godotenv.Load()
+	// if err != nil {
+	// 	log.Fatal(err, "Error loading the .env file")
+	// }
 
 	go scheduleMedicaments(&medicaments, &medicamentsMap, &generiques, &generiquesMap)
 }
@@ -33,6 +47,10 @@ func main() {
 	portString := os.Getenv("PORT")
 	if portString == "" {
 		log.Fatal("PORT is not found in the evironment")
+	}
+	adressString := os.Getenv("ADRESS")
+	if adressString == "" {
+		log.Fatal("ADRESS is not found in the environment")
 	}
 
 	router := chi.NewRouter()
@@ -50,7 +68,7 @@ func main() {
 
 	server := &http.Server{
 		Handler: router,
-		Addr:    ":" + portString,
+		Addr:    adressString + ":" + portString,
 	}
 
 	router.Get("/database", serveAllMedicaments)
