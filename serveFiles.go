@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"regexp"
 	"strconv"
-	"time"
 
+	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 	"github.com/go-chi/chi"
 )
 
@@ -21,15 +22,36 @@ func serveAllMedicaments(w http.ResponseWriter, r *http.Request) {
 	meds = nil
 	// Write the headers for the json response
 	w.Header().Add("Content-Type", "application/json; charset=utf-8")
-	w.Header().Add("Cache-Control", "public, max-age=3600")
-	w.Header().Add("Expires", time.Now().Add(time.Hour).Format(http.TimeFormat))
-	w.Header().Add("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
+	w.Header().Add("Cache-Control", "public, max-age=43200") // caches for half a day
 	w.WriteHeader(200)
 	w.Write(parsedJson)
 }
 
 func findMedicament(w http.ResponseWriter, r *http.Request) {
+	matchingMedicaments := make([]entities.Medicament, 0)
 
+	userPattern := chi.URLParam(r, "element")
+	pattern, compileErr := regexp.Compile(`(?i).*` + regexp.QuoteMeta(userPattern) + `.*`)
+
+	if compileErr != nil {
+		log.Panic("An error has ocurred with the search parameter", compileErr)
+	} else {
+		for _, med := range medicaments {
+			// Search the value in medicament denomination, composition
+			// denomination and generique libelle
+
+			// For now I'll just use the medicament denomination
+			medOk := pattern.MatchString(med.Denomination)
+			if medOk {
+				matchingMedicaments = append(matchingMedicaments, med)
+			}
+		}
+	}
+	if len(matchingMedicaments) > 0 {
+		respondWithJSON(w, 200, matchingMedicaments)
+	} else {
+		respondWithError(w, 404, "No medicaments found that matches the word")
+	}
 }
 
 func findMedicamentById(w http.ResponseWriter, r *http.Request) {

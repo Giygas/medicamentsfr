@@ -3,5 +3,5 @@
 **src/*.json
 src/*
 .env
-*.exe
 .DS_Store
+medicamentsfr

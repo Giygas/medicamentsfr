@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 	"github.com/go-chi/chi"
@@ -19,12 +20,29 @@ var medicamentsMap = make(map[int]entities.Medicament)
 var generiquesMap = make(map[int]entities.Generique)
 
 func init() {
-	// Load the env variables
+	// Get the working directory and read the env variables
 	err := godotenv.Load()
 	if err != nil {
+<<<<<<< HEAD:apimedicaments/main.go
 		log.Fatal(err)
 	}
 
+=======
+		// If failed, try loading from executable directory
+		ex, err := os.Executable()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		exPath := filepath.Dir(ex)
+
+		err = os.Chdir(exPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+	}
+>>>>>>> droplet-deploy:main.go
 	go scheduleMedicaments(&medicaments, &medicamentsMap, &generiques, &generiquesMap)
 }
 
@@ -33,6 +51,10 @@ func main() {
 	portString := os.Getenv("PORT")
 	if portString == "" {
 		log.Fatal("PORT is not found in the evironment")
+	}
+	adressString := os.Getenv("ADRESS")
+	if adressString == "" {
+		log.Fatal("ADRESS is not found in the evironment")
 	}
 
 	router := chi.NewRouter()
@@ -50,7 +72,7 @@ func main() {
 
 	server := &http.Server{
 		Handler: router,
-		Addr:    ":" + portString,
+		Addr:    adressString + ":" + portString,
 	}
 
 	router.Get("/database", serveAllMedicaments)

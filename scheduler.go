@@ -26,7 +26,11 @@ func checkMedicaments(medicaments *[]entities.Medicament) {
 func scheduleMedicaments(medicaments *[]entities.Medicament, mMap *map[int]entities.Medicament, generiques *[]entities.GeneriqueList, gMap *map[int]entities.Generique) {
 	s := gocron.NewScheduler(time.Local)
 
+<<<<<<< HEAD:apimedicaments/scheduler.go
 	_, err := s.Every(1).Days().Do(func() {
+=======
+	_, err := s.Every(1).Days().At("06:00;18:00").StartImmediately().Do(func() {
+>>>>>>> droplet-deploy:scheduler.go
 		fmt.Println("Starting update at: ", time.Now())
 		// Get the current time for calculating the total database update time
 		start := time.Now()

@@ -2,8 +2,6 @@ package main
 
 import (
 	"net/http"
-	"os"
-	"time"
 
 	"github.com/juju/ratelimit"
 )
@@ -25,21 +23,11 @@ func rateLimitHandler(h http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		// Check the If-Modified-Since header, so if the user has the json cached, there's no need to
-		// discount tokens from bucket
-		ifModifiedSince := r.Header.Get("If-Modified-Since")
-		if ifModifiedSince != "" {
-			// Parse the If-Modified-Since date
-			ifModifiedSinceTime, err := http.ParseTime(ifModifiedSince)
-			if err == nil {
-				// Get the modification time of the file
-				fileInfo, err := os.Stat("./src/Medicaments.json")
-				if err == nil && fileInfo.ModTime().Before(ifModifiedSinceTime.Add(1*time.Second)) {
-					// If the file has not been modified since the If-Modified-Since date, return a 304 Not Modified response
-					w.WriteHeader(http.StatusNotModified)
-					return
-				}
-			}
+		// Check if the client has a valid cached version of the data
+		if r.Header.Get("If-None-Match") != "" || r.Header.Get("If-Modified-Since") != "" {
+			// If so, skip the rate limit check and proceed to the next handler
+			h.ServeHTTP(w, r)
+			return
 		}
 
 		// Calculate the token cost for the request
@@ -47,7 +35,7 @@ func rateLimitHandler(h http.Handler) http.Handler {
 
 		// Check if the client has enough tokens
 		if limiter.TakeAvailable(tokenCost) < tokenCost {
-			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+			http.Error(w, "You have exceeded your request rate limit, try again later", http.StatusTooManyRequests)
 			return
 		}
 
