@@ -21,22 +21,22 @@ var generiquesMap = make(map[int]entities.Generique)
 
 func init() {
 	// Get the working directory and read the env variables
-	ex, err := os.Executable()
+	err := godotenv.Load()
 	if err != nil {
-		log.Fatal(err)
-	}
+		// If failed, try loading from executable directory
+		ex, err := os.Executable()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	exPath := filepath.Dir(ex)
+		exPath := filepath.Dir(ex)
 
-	err = os.Chdir(exPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = godotenv.Load()
-	if err != nil {
-		log.Fatal(err, "Error loading the .env file")
-	}
+		err = os.Chdir(exPath)
+		if err != nil {
+			log.Fatal(err)
+		}
 
+	}
 	go scheduleMedicaments(&medicaments, &medicamentsMap, &generiques, &generiquesMap)
 }
 
@@ -45,6 +45,10 @@ func main() {
 	portString := os.Getenv("PORT")
 	if portString == "" {
 		log.Fatal("PORT is not found in the evironment")
+	}
+	adressString := os.Getenv("ADRESS")
+	if adressString == "" {
+		log.Fatal("ADRESS is not found in the evironment")
 	}
 
 	router := chi.NewRouter()
@@ -62,7 +66,7 @@ func main() {
 
 	server := &http.Server{
 		Handler: router,
-		Addr:    ":" + portString,
+		Addr:    adressString + ":" + portString,
 	}
 
 	router.Get("/database", serveAllMedicaments)
