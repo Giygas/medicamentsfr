@@ -23,11 +23,6 @@ func init() {
 	// Get the working directory and read the env variables
 	err := godotenv.Load()
 	if err != nil {
-<<<<<<< HEAD:apimedicaments/main.go
-		log.Fatal(err)
-	}
-
-=======
 		// If failed, try loading from executable directory
 		ex, err := os.Executable()
 		if err != nil {
@@ -42,7 +37,6 @@ func init() {
 		}
 
 	}
->>>>>>> droplet-deploy:main.go
 	go scheduleMedicaments(&medicaments, &medicamentsMap, &generiques, &generiquesMap)
 }
 
@@ -75,6 +69,7 @@ func main() {
 		Addr:    adressString + ":" + portString,
 	}
 
+	router.Get("/database/{pageNumber}", servePagedMedicaments)
 	router.Get("/database", serveAllMedicaments)
 	router.Get("/medicament/{element}", findMedicament)
 	router.Get("/medicament/id/{cis}", findMedicamentById)

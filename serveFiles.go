@@ -27,6 +27,38 @@ func serveAllMedicaments(w http.ResponseWriter, r *http.Request) {
 	w.Write(parsedJson)
 }
 
+func servePagedMedicaments(w http.ResponseWriter, r *http.Request) {
+	page, err := strconv.Atoi(chi.URLParam(r, "pageNumber"))
+
+	if err != nil || page < 1 {
+		respondWithError(w, 404, "Invalid page number")
+
+		return
+	}
+	// Get the maximal page possible for the medicaments
+	maxPagePossible := len(medicamentsMap) / 10
+
+	if len(medicamentsMap)%10 != 0 {
+		maxPagePossible++
+	}
+
+	medicamentsUpper := page * 10
+
+	// If the upper slice of the medicaments is bigger than the maximum, give an error message and exit
+	if medicamentsUpper > maxPagePossible*10 {
+		respondWithError(w, 404, "Maximum page possible is: "+strconv.Itoa(maxPagePossible))
+		return
+	}
+
+	medicamentsLower := medicamentsUpper - 10
+
+	if medicamentsUpper <= len(medicamentsMap)/10 {
+		respondWithJSON(w, 200, medicaments[medicamentsLower:medicamentsUpper])
+	} else {
+		respondWithJSON(w, 200, medicaments[medicamentsLower:])
+	}
+}
+
 func findMedicament(w http.ResponseWriter, r *http.Request) {
 	matchingMedicaments := make([]entities.Medicament, 0)
 
