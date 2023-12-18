@@ -18,7 +18,7 @@ func rateLimitHandler(h http.Handler) http.Handler {
 		if r.URL.Path == "/database" {
 			return 500 // Higher token cost for expensive requests
 		}
-		return 15 // Default token cost for other requests
+		return 20 // Default token cost for other requests
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
