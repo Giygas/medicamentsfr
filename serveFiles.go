@@ -101,7 +101,28 @@ func findMedicamentById(w http.ResponseWriter, r *http.Request) {
 }
 
 func findGeneriques(w http.ResponseWriter, r *http.Request) {
+	matchingGeneriques := make([]entities.GeneriqueList, 0)
 
+	userPattern := chi.URLParam(r, "libelle")
+	pattern, compileErr := regexp.Compile(`(?i).*` + regexp.QuoteMeta(userPattern) + `.*`)
+
+	if compileErr != nil {
+		log.Panic("An error has ocurred with the search parameter", compileErr)
+	} else {
+		for _, gen := range generiques {
+			// Search for the generique name in generique libelle
+
+			medOk := pattern.MatchString(gen.Libelle)
+			if medOk {
+				matchingGeneriques = append(matchingGeneriques, gen)
+			}
+		}
+	}
+	if len(matchingGeneriques) > 0 {
+		respondWithJSON(w, 200, matchingGeneriques)
+	} else {
+		respondWithError(w, 404, "No generiques found that matches the word")
+	}
 }
 
 func findGeneriquesByGroupId(w http.ResponseWriter, r *http.Request) {
@@ -114,6 +135,6 @@ func findGeneriquesByGroupId(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		respondWithJSON(w, 200, generique)
 	} else {
-		respondWithError(w, 404, "There are no medicaments in this group")
+		respondWithError(w, 404, "There are no medicaments in this generique group")
 	}
 }
