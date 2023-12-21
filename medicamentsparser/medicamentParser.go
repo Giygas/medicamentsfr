@@ -98,7 +98,7 @@ func ParseAllMedicaments() []entities.Medicament {
 			}
 		}(med.Cis)
 
-		// Get all the presentations of thi medicament
+		// Get all the presentations of this medicament
 		go func(id int) {
 			defer wg.Done()
 			for _, v := range presentations {

@@ -2,7 +2,6 @@ package medicamentsparser
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -53,7 +52,7 @@ func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities
 		log.Println("An error has occurred when marshalling generiques", err)
 	}
 	_ = os.WriteFile("src/GeneriquesFull.json", marshalledGeneriques, 0644)
-	fmt.Println("GeneriquesFull.json created")
+	log.Println("GeneriquesFull.json created")
 	return generiques, generiquesMap
 }
 
