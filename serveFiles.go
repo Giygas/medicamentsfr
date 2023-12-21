@@ -1,6 +1,7 @@
 package main
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -21,10 +22,13 @@ func serveAllMedicaments(w http.ResponseWriter, r *http.Request) {
 	}
 	meds = nil
 	// Write the headers for the json response
-	w.Header().Add("Content-Type", "application/json; charset=utf-8")
-	w.Header().Add("Cache-Control", "public, max-age=43200") // caches for half a day
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Content-Encoding", "gzip")
+	w.Header().Set("Cache-Control", "public, max-age=43200") // caches for half a day
 	w.WriteHeader(200)
-	w.Write(parsedJson)
+	gz := gzip.NewWriter(w)
+	defer gz.Close()
+	gz.Write(parsedJson)
 }
 
 func servePagedMedicaments(w http.ResponseWriter, r *http.Request) {

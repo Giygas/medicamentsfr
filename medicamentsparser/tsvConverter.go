@@ -96,6 +96,8 @@ func makePresentations(wg *sync.WaitGroup) []entities.Presentation {
 func makeGeneriques(wg *sync.WaitGroup) []entities.Generique {
 	if wg != nil {
 		defer wg.Done()
+	} else {
+		log.Println("Second creation of generiques for the mapping of the medicaments")
 	}
 
 	tsvFile, err := os.Open("files/Generiques.txt")
@@ -154,14 +156,15 @@ func makeGeneriques(wg *sync.WaitGroup) []entities.Generique {
 		}
 	}
 
-	log.Println("Generiques done")
-
 	jsonGeneriques, err := json.MarshalIndent(generiquesList, "", "  ")
 	if err != nil {
 		log.Println("Error ocurred when marshalling generiques\n", err)
 	}
-	_ = os.WriteFile("src/Generiques.json", jsonGeneriques, 0644)
-	log.Println("Generiques.json created (List of generiques)")
+	if wg != nil {
+		log.Println("Generiques done")
+		_ = os.WriteFile("src/Generiques.json", jsonGeneriques, 0644)
+		log.Println("Generiques.json created (List of generiques)")
+	}
 
 	return jsonRecords
 }
