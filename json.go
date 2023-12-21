@@ -1,6 +1,7 @@
 package main
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -15,10 +16,13 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 		return
 	}
 
-	w.Header().Add("Content-Type", "application/json; charset=utf-8")
-	w.Header().Add("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
+	w.Header().Set("Content-Encoding", "gzip")
 	w.WriteHeader(code)
-	w.Write(data)
+	gz := gzip.NewWriter(w)
+	defer gz.Close()
+	gz.Write(data)
 }
 
 func respondWithError(w http.ResponseWriter, code int, msg string) {
@@ -32,5 +36,3 @@ func respondWithError(w http.ResponseWriter, code int, msg string) {
 		Error: msg,
 	})
 }
-
-
