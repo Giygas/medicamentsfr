@@ -3,6 +3,7 @@ package main
 import (
 	"compress/gzip"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"regexp"
@@ -56,7 +57,8 @@ func servePagedMedicaments(w http.ResponseWriter, r *http.Request) {
 
 	medicamentsLower := medicamentsUpper - 10
 
-	if medicamentsUpper <= len(medicamentsMap)/10 {
+	if page < maxPagePossible {
+		fmt.Println(medicamentsUpper)
 		respondWithJSON(w, 200, medicaments[medicamentsLower:medicamentsUpper])
 	} else {
 		respondWithJSON(w, 200, medicaments[medicamentsLower:])
