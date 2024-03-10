@@ -3,41 +3,37 @@ on:
     branches:
       - main
   workflow_dispatch:
-  
+
 jobs:
   setup_go:
-
     name: setup go
     runs-on: ubuntu-latest
- 
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    - name: Setup Go environment
-      uses: actions/setup-go@v5.0.0
-      with:
-        go-version-file: 'go.mod'
-        run: go version
-        
-    - name: Install dependencies
-      run: go install .
-    - name: Build
-      run: GOOS=linux GOARCH=amd64 go build
-    - name: install ssh keys
-      # check this thread to understand why its needed:
-      # https://stackoverflow.com/a/70447517
-      run: |
-        install -m 600 -D /dev/null ~/.ssh/id_rsa
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-    - name: Copy file to server
-      run: scp medicamentsfr ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REPO_DIR }}
-    - name: Replace current running app
-      run: |
-        ssh ${{ secrets.SSH_USER}}@${{ secrets.SSH_HOST }} && systemctl status medicamentsapi.service
-        sudo systemctl stop ${{ secrets.PROD_PROCESS }}
-        mv ${{ secrets.REPO_DIR }}/medicamentsfr ${{ secrets.WORK_DIR }}
-        sudo systemctl start ${{ secrets.PROD_PROCESS }}
-        exit
-    - name: cleanup
-      run: rm -rf ~/.ssh 
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Go environment
+        uses: actions/setup-go@v5.0.0
+        with:
+          go-version-file: "go.mod"
+          run: go version
+
+      - name: Install dependencies
+        run: go install .
+      - name: Build
+        run: GOOS=linux GOARCH=amd64 go build
+      - name: install ssh keys
+        # check this thread to understand why its needed:
+        # https://stackoverflow.com/a/70447517
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+      - name: Copy file to server
+        run: scp medicamentsfr ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REPO_DIR }}
+      - name: Replace current running app
+        run: |
+          ssh ${{ secrets.SSH_USER}}@${{ secrets.SSH_HOST }} "${{ secrets.APP_RESTART }}" 
+          exit
+      - name: cleanup
+        run: rm -rf ~/.ssh
