@@ -40,8 +40,6 @@ func scheduleMedicaments(medicaments *[]entities.Medicament, mMap *map[int]entit
 
 	_, err := s.Every(1).Days().At("06:00;18:00").StartImmediately().Do(func() {
 
-		//TODO: reset the medicamentsMap and generiquesMap on each database update
-
 		// Reinitialize all variables on each update, otherwise the map will never shrink back if there's
 		// less medicaments than the last time
 		*medicaments = make([]entities.Medicament, 0)
