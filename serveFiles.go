@@ -10,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 )
 
 func serveAllMedicaments(w http.ResponseWriter, r *http.Request) {
@@ -95,7 +95,8 @@ func findMedicament(w http.ResponseWriter, r *http.Request) {
 func findMedicamentById(w http.ResponseWriter, r *http.Request) {
 	cis, err := strconv.Atoi(chi.URLParam(r, "cis"))
 	if err != nil {
-		log.Fatal("An error ocurred when getting the medicament cis", cis)
+		respondWithError(w, 400, "Bad Request: Not a Number")
+		return
 	}
 
 	medicament, ok := medicamentsMap[cis]
@@ -132,9 +133,11 @@ func findGeneriques(w http.ResponseWriter, r *http.Request) {
 }
 
 func findGeneriquesByGroupId(w http.ResponseWriter, r *http.Request) {
+
 	groupId, err := strconv.Atoi(chi.URLParam(r, "groupId"))
 	if err != nil {
-		log.Fatal("An error ocurred when getting the medicament cis", groupId)
+		respondWithError(w, 400, "Bad Request: Not a Number")
+		return
 	}
 
 	generique, ok := generiquesMap[groupId]

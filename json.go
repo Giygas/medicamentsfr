@@ -26,13 +26,9 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 }
 
 func respondWithError(w http.ResponseWriter, code int, msg string) {
-	if code > 499 {
-		log.Println("Responding with 5XX error: ", msg)
-	}
-	type errResponse struct {
-		Error string `json:"error"`
-	}
-	respondWithJSON(w, code, errResponse{
-		Error: msg,
-	})
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Last-Modified", time.Now().UTC().Format(http.TimeFormat))
+	w.Header().Set("Content-Encoding", "gzip")
+	w.WriteHeader(code)
+	w.Write([]byte(`{"error": "` + msg + `"}`))
 }

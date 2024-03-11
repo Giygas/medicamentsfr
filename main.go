@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 )
@@ -76,7 +76,7 @@ func main() {
 	router.Get("/generiques/{libelle}", findGeneriques)
 	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupId)
 
-	fmt.Printf("Starting server at PORT: %v\n", portString)
+	fmt.Printf("Starting server at PORT:%v\n", portString)
 	err := server.ListenAndServe()
 
 	if errors.Is(err, http.ErrServerClosed) {
