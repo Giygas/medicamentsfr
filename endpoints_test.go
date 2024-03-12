@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -10,12 +11,39 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+func isDatabaseReady() bool {
+	const testCIS = 61266250
+	const testGroup = 1643
+	if (medicamentsMap[testCIS].Cis == testCIS) && (generiquesMap[testGroup].Group == testGroup) {
+		return true
+	}
+
+	return false
+}
+
 func TestMain(m *testing.M) {
-	time.Sleep(10 * time.Second)
 
-	exitVal := m.Run()
+	// Set a timeout for the polling
+	timeout := time.After(10 * time.Second)   // Adjust the timeout as needed
+	tick := time.Tick(500 * time.Millisecond) // Poll every 500ms
 
-	os.Exit(exitVal)
+	for {
+		select {
+		case <-timeout:
+			fmt.Println("Timeout reached")
+			// Handle the timeout case, e.g., by failing the test
+			fmt.Println("Database did not become ready within the timeout period")
+			return
+		case <-tick:
+			if isDatabaseReady() {
+				fmt.Println("Database is ready")
+				// Proceed with your tests
+				exitVal := m.Run()
+				os.Exit(exitVal)
+				return
+			}
+		}
+	}
 }
 
 func TestEndpoints(t *testing.T) {
