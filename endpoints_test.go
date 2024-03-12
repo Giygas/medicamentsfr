@@ -5,34 +5,14 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
-	"github.com/giygas/medicamentsfr/medicamentsparser"
 	"github.com/go-chi/chi/v5"
 )
 
-func initRouter() *chi.Mux {
-	router := chi.NewRouter()
-	router.Use(rateLimitHandler)
-
-	router.Get("/database/{pageNumber}", servePagedMedicaments)
-	router.Get("/database", serveAllMedicaments)
-	router.Get("/medicament/{element}", findMedicament)
-	router.Get("/medicament/id/{cis}", findMedicamentById)
-	router.Get("/generiques/{libelle}", findGeneriques)
-	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupId)
-
-	return router
-}
-
 func TestMain(m *testing.M) {
-	medicaments = medicamentsparser.ParseAllMedicaments()
+	time.Sleep(10 * time.Second)
 
-	// Create a map of all medicaments to reduce algorithm complexity
-	for i := range medicaments {
-		medicamentsMap[(medicaments)[i].Cis] = (medicaments)[i]
-	}
-
-	generiques, generiquesMap = medicamentsparser.GeneriquesParser(&medicaments, &medicamentsMap)
 	exitVal := m.Run()
 
 	os.Exit(exitVal)
@@ -62,7 +42,15 @@ func TestEndpoints(t *testing.T) {
 		{"Test generiques/group/a", "/generiques/group/a", http.StatusBadRequest},
 	}
 
-	router := initRouter()
+	router := chi.NewRouter()
+	router.Use(rateLimitHandler)
+
+	router.Get("/database/{pageNumber}", servePagedMedicaments)
+	router.Get("/database", serveAllMedicaments)
+	router.Get("/medicament/{element}", findMedicament)
+	router.Get("/medicament/id/{cis}", findMedicamentById)
+	router.Get("/generiques/{libelle}", findGeneriques)
+	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupId)
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
