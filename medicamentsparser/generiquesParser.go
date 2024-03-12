@@ -41,7 +41,7 @@ func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities
 		current := entities.GeneriqueList{
 			GroupId:     groupInt,
 			Libelle:     generiquesMap[groupInt].Libelle,
-			Medicaments: getMedicamentsInArray(v, medicaments, mMap),
+			Medicaments: getMedicamentsInArray(v, mMap),
 		}
 
 		generiques = append(generiques, current)
@@ -69,7 +69,7 @@ func createGeneriqueComposition(medicamentComposition *[]entities.Composition) [
 	return compositions
 }
 
-func getMedicamentsInArray(medicamentsIds []int, medicaments *[]entities.Medicament, medicamentMap *map[int]entities.Medicament) []entities.GeneriqueMedicament {
+func getMedicamentsInArray(medicamentsIds []int, medicamentMap *map[int]entities.Medicament) []entities.GeneriqueMedicament {
 	var medicamentsArray []entities.GeneriqueMedicament
 
 	for _, v := range medicamentsIds {
