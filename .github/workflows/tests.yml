@@ -5,6 +5,8 @@ on:
   pull_request:
     branches:
       - main
+      - testing
+  workflow_call:
 
 jobs:
   test:

@@ -35,6 +35,7 @@ func checkMedicamentMap(mMap *map[int]entities.Medicament) {
 		}
 	}
 }
+
 func scheduleMedicaments(medicaments *[]entities.Medicament, mMap *map[int]entities.Medicament, generiques *[]entities.GeneriqueList, gMap *map[int]entities.Generique) {
 	s := gocron.NewScheduler(time.Local)
 
@@ -67,6 +68,7 @@ func scheduleMedicaments(medicaments *[]entities.Medicament, mMap *map[int]entit
 		checkMedicaments(medicaments)
 		checkMedicamentMap(mMap)
 	})
+
 	if err != nil {
 		log.Fatal("An error has ocurred while starting the chron job", err)
 	}

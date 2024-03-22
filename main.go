@@ -20,6 +20,7 @@ var medicamentsMap = make(map[int]entities.Medicament)
 var generiquesMap = make(map[int]entities.Generique)
 
 func init() {
+
 	// Get the working directory and read the env variables
 	err := godotenv.Load()
 	if err != nil {

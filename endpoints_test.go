@@ -1,41 +1,49 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
-	"github.com/giygas/medicamentsfr/medicamentsparser"
 	"github.com/go-chi/chi/v5"
 )
 
-func initRouter() *chi.Mux {
-	router := chi.NewRouter()
-	router.Use(rateLimitHandler)
+func isDatabaseReady() bool {
+	const testCIS = 61266250
+	const testGroup = 1643
+	if (medicamentsMap[testCIS].Cis == testCIS) && (generiquesMap[testGroup].Group == testGroup) {
+		return true
+	}
 
-	router.Get("/database/{pageNumber}", servePagedMedicaments)
-	router.Get("/database", serveAllMedicaments)
-	router.Get("/medicament/{element}", findMedicament)
-	router.Get("/medicament/id/{cis}", findMedicamentById)
-	router.Get("/generiques/{libelle}", findGeneriques)
-	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupId)
-
-	return router
+	return false
 }
 
 func TestMain(m *testing.M) {
-	medicaments = medicamentsparser.ParseAllMedicaments()
 
-	// Create a map of all medicaments to reduce algorithm complexity
-	for i := range medicaments {
-		medicamentsMap[(medicaments)[i].Cis] = (medicaments)[i]
+	// Set a timeout for the polling
+	timeout := time.After(10 * time.Second)   // Adjust the timeout as needed
+	tick := time.Tick(500 * time.Millisecond) // Poll every 500ms
+
+	for {
+		select {
+		case <-timeout:
+			fmt.Println("Timeout reached")
+			// Handle the timeout case, e.g., by failing the test
+			fmt.Println("Database did not become ready within the timeout period")
+			return
+		case <-tick:
+			if isDatabaseReady() {
+				fmt.Println("Database is ready")
+				// Proceed with your tests
+				exitVal := m.Run()
+				os.Exit(exitVal)
+				return
+			}
+		}
 	}
-
-	generiques, generiquesMap = medicamentsparser.GeneriquesParser(&medicaments, &medicamentsMap)
-	exitVal := m.Run()
-
-	os.Exit(exitVal)
 }
 
 func TestEndpoints(t *testing.T) {
@@ -62,7 +70,15 @@ func TestEndpoints(t *testing.T) {
 		{"Test generiques/group/a", "/generiques/group/a", http.StatusBadRequest},
 	}
 
-	router := initRouter()
+	router := chi.NewRouter()
+	router.Use(rateLimitHandler)
+
+	router.Get("/database/{pageNumber}", servePagedMedicaments)
+	router.Get("/database", serveAllMedicaments)
+	router.Get("/medicament/{element}", findMedicament)
+	router.Get("/medicament/id/{cis}", findMedicamentById)
+	router.Get("/generiques/{libelle}", findGeneriques)
+	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupId)
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
