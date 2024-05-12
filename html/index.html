@@ -60,12 +60,11 @@
             points de terminaison pour obtenir la base de données complète ou avec un système de pagination divisé par
             10 médicaments, rechercher des médicaments spécifiques, des génériques et des groupes de génériques. Pour
             garantir que les données sont à jour et fiables, l'application se met à jour à 6h et 18h chaque jour.
-
-
         </p>
         <p>
-            Afin de garantir des performances optimales et d'éviter une charge excessive sur le serveur, j’ai mis en
-            place un système de buckets qui se remplit par minute, régulant ainsi le nombre de requêtes acceptées.
+            Afin de garantir des performances optimales et d'éviter une charge excessive sur le serveur, Il y a un
+            système de buckets mis en
+            place un qui se remplit par minute, régulant ainsi le nombre de requêtes acceptées.
 
         </p>
 
@@ -83,14 +82,14 @@
             <h3>/medicament/{libelle}</h3>
             <p>Renvoie les médicaments où le libellé correspond </p>
 
-            <h4>Exemple de Réponse <a href="/medicament/ketamine">/medicament/ketamine</a></h4>
+            <h4>Exemple de Réponse <a href="/medicament/ketamine" target="_blank">/medicament/ketamine</a></h4>
             <div class="code" id="medicamentLibelleDiv">
             </div>
         </section>
         <section>
             <h3>/medicament/id/{cis}</h3>
             <p>Renvoie le médicament correspondant au cis donnée.</p>
-            <h4>Exemple de Réponse <a href="/medicament/id/60904643">/medicament/id/60904643</a></h4>
+            <h4>Exemple de Réponse <a href="/medicament/id/60904643" target="_blank">/medicament/id/60904643</a></h4>
             <div class="code" id="medicamentToAdd">
             </div>
         </section>
@@ -98,7 +97,7 @@
             <h3>/generiques/{libelle}</h3>
             <p>Renvoie les generiques où le libellé correspond </p>
 
-            <h4>Exemple de Réponse <a href="/generiques/paracetamol">/generiques/paracetamol</a></h4>
+            <h4>Exemple de Réponse <a href="/generiques/paracetamol" target="_blank">/generiques/paracetamol</a></h4>
             <div class="code" id="generiqueLibDiv">
             </div>
         </section>
@@ -106,7 +105,7 @@
             <h3>/generiques/group/{groupId}</h3>
             <p>Renvoie le group de generiques correspondants au {groupId} </p>
 
-            <h4>Exemple de Réponse <a href="/generiques/group/1506">/generiques/group/1506</a></h4>
+            <h4>Exemple de Réponse <a href="/generiques/group/1506" target="_blank">/generiques/group/1506</a></h4>
             <div class="code" id="generiqueGroupDiv">
             </div>
         </section>
