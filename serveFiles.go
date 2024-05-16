@@ -36,7 +36,7 @@ func servePagedMedicaments(w http.ResponseWriter, r *http.Request) {
 	page, err := strconv.Atoi(chi.URLParam(r, "pageNumber"))
 
 	if err != nil || page < 1 {
-		respondWithError(w, 404, "Invalid page number")
+		respondWithError(w, 400, "Invalid page number")
 
 		return
 	}

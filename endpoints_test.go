@@ -24,7 +24,7 @@ func isDatabaseReady() bool {
 func TestMain(m *testing.M) {
 
 	// Set a timeout for the polling
-	timeout := time.After(10 * time.Second)   // Adjust the timeout as needed
+	timeout := time.After(15 * time.Second)   // Adjust the timeout as needed
 	tick := time.Tick(500 * time.Millisecond) // Poll every 500ms
 
 	for {
@@ -58,10 +58,10 @@ func TestEndpoints(t *testing.T) {
 		{"Test generiques/paracetamol", "/generiques/paracetamol", http.StatusOK},
 		{"Test generiques/group/1643", "/generiques/group/1643", http.StatusOK},
 		{"Test medicament/doli", "/medicament/doli", http.StatusOK},
-		{"Test database with a", "/database/a", http.StatusNotFound},
+		{"Test database with a", "/database/a", http.StatusBadRequest},
 		{"Test database with 1", "/database/1", http.StatusOK},
-		{"Test database with 0", "/database/0", http.StatusNotFound},
-		{"Test database with -1", "/database/-1", http.StatusNotFound},
+		{"Test database with 0", "/database/0", http.StatusBadRequest},
+		{"Test database with -1", "/database/-1", http.StatusBadRequest},
 		{"Test generiques", "/generiques", http.StatusNotFound},
 		{"Test generiques/aaaaaaaaaaa", "/generiques/aaaaaaaaaaa", http.StatusNotFound},
 		{"Test medicament", "/medicament", http.StatusNotFound},
