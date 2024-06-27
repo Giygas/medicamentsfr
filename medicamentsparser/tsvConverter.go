@@ -32,17 +32,17 @@ func makePresentations(wg *sync.WaitGroup) []entities.Presentation {
 
 		cis, err := strconv.Atoi(fields[0])
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error converting to int cis in %s, Presentations file ERROR: %s", fields[0], err)
 		}
 
 		cip7, err := strconv.Atoi(fields[1])
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error converting to int cip7 in %s, Presentations file, ERROR: %s", fields[1], err)
 		}
 
 		cip13, err := strconv.Atoi(fields[6])
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error converting to int cip13 in %s, Presentations file, ERROR: %s", fields[6], err)
 		}
 
 		// Because the downloaded database has commas as thousands and decimal separators,
@@ -64,6 +64,7 @@ func makePresentations(wg *sync.WaitGroup) []entities.Presentation {
 			p, err := strconv.ParseFloat(strings.Replace(fields[9], ",", ".", -1), 32)
 
 			if err != nil {
+				log.Fatalf("Error removing extra commas in %s, Presentations file, ERROR: %s", fields[9], err)
 				log.Fatal(err)
 			}
 			p = math.Trunc(p*100) / 100
@@ -120,12 +121,13 @@ func makeGeneriques(wg *sync.WaitGroup) []entities.Generique {
 
 		cis, err := strconv.Atoi(fields[2])
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error converting to int cis in %s, Generiques file ERROR: %s", fields[2], err)
+
 		}
 
 		group, err := strconv.Atoi(fields[0])
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error converting to int group in %s, Generiques file ERROR: %s", fields[0], err)
 		}
 
 		var generiqueType string
@@ -188,12 +190,13 @@ func makeCompositions(wg *sync.WaitGroup) []entities.Composition {
 
 		cis, err := strconv.Atoi(fields[0])
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error converting to int cis in %s, Compositions file ERROR: %s", fields[0], err)
 		}
 
 		codeS, err := strconv.Atoi(fields[2])
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error converting to int codeSubstance in %s, Compositions file ERROR: %s", fields[2], err)
+
 		}
 
 		record := entities.Composition{
@@ -232,7 +235,7 @@ func makeSpecialites(wg *sync.WaitGroup) []entities.Specialite {
 
 		cis, err := strconv.Atoi(fields[0])
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error converting to int cis in %s, Specialites file, ERROR: %s", fields[0], err)
 		}
 
 		record := entities.Specialite{
@@ -272,9 +275,14 @@ func makeConditions(wg *sync.WaitGroup) []entities.Condition {
 		line := scanner.Text()
 		fields := strings.Split(line, "\t")
 
+		// For some weird reason, the csv file from the site has some empty lines between the data
+		if len(line) == 0 {
+			continue
+		}
+
 		cis, err := strconv.Atoi(fields[0])
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error converting to int cis in %s, Conditions file, ERROR: %s", fields[0], err)
 		}
 
 		record := entities.Condition{
