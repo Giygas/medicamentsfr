@@ -1,10 +1,12 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Medicaments API Documentation</title>
-    <style>
+    <style
+      nonce="4f3394e800fae9092f5a6d672ce8d1dc73a47a58eaed35f3c38d916490b024fd"
+    >
       @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
       body {
@@ -137,7 +139,7 @@
         <div class="code" id="generiqueGroupDiv"></div>
       </section>
     </div>
-    <script>
+    <script nonce="databaseScript">
       // Database pre
       const databaseF = [
         {
@@ -194,12 +196,12 @@
             "prescription réservée aux médecins compétents en CANCEROLOGIE",
           ],
         },
-      ]
-      const databaseElement = document.getElementById("databaseToAdd")
-      const dataPre = document.createElement("pre")
-      dataPre.append(JSON.stringify(databaseF, null, 2))
+      ];
+      const databaseElement = document.getElementById("databaseToAdd");
+      const dataPre = document.createElement("pre");
+      dataPre.append(JSON.stringify(databaseF, null, 2));
 
-      databaseElement.append(dataPre)
+      databaseElement.append(dataPre);
 
       // Medicament by libelle
       const medicamentLibelle = [
@@ -589,14 +591,14 @@
             "réservé à une structure d'assistance médicale mobile ou de rapatriement sanitaire",
           ],
         },
-      ]
+      ];
       const medicamentLibElement = document.getElementById(
-        "medicamentLibelleDiv"
-      )
-      const medLibPre = document.createElement("pre")
-      medLibPre.append(JSON.stringify(medicamentLibelle, null, 2))
+        "medicamentLibelleDiv",
+      );
+      const medLibPre = document.createElement("pre");
+      medLibPre.append(JSON.stringify(medicamentLibelle, null, 2));
 
-      medicamentLibElement.append(medLibPre)
+      medicamentLibElement.append(medLibPre);
 
       //Medicament by Id (CIS)
       const medicamentId = {
@@ -660,12 +662,12 @@
           },
         ],
         conditions: ["liste I"],
-      }
-      const medicamentElement = document.getElementById("medicamentToAdd")
-      const medPre = document.createElement("pre")
-      medPre.append(JSON.stringify(medicamentId, null, 2))
+      };
+      const medicamentElement = document.getElementById("medicamentToAdd");
+      const medPre = document.createElement("pre");
+      medPre.append(JSON.stringify(medicamentId, null, 2));
 
-      medicamentElement.append(medPre)
+      medicamentElement.append(medPre);
 
       //Generique by libelle
       const generiqueLib = [
@@ -836,12 +838,12 @@
             },
           ],
         },
-      ]
-      const generiqueLibElement = document.getElementById("generiqueLibDiv")
-      const genLibPre = document.createElement("pre")
-      genLibPre.append(JSON.stringify(generiqueLib, null, 2))
+      ];
+      const generiqueLibElement = document.getElementById("generiqueLibDiv");
+      const genLibPre = document.createElement("pre");
+      genLibPre.append(JSON.stringify(generiqueLib, null, 2));
 
-      generiqueLibElement.append(genLibPre)
+      generiqueLibElement.append(genLibPre);
 
       //Generique by groupId
       const generiqueGroup = {
@@ -850,12 +852,13 @@
         libelle:
           "SUNITINIB (MALATE DE) équivalant  à  SUNITINIB 25 mg - SUNITINIB 25 mg- SUTENT 25 mg, gélule",
         type: "Générique",
-      }
-      const generiqueGroupElement = document.getElementById("generiqueGroupDiv")
-      const genGroupPre = document.createElement("pre")
-      genGroupPre.append(JSON.stringify(generiqueGroup, null, 2))
+      };
+      const generiqueGroupElement =
+        document.getElementById("generiqueGroupDiv");
+      const genGroupPre = document.createElement("pre");
+      genGroupPre.append(JSON.stringify(generiqueGroup, null, 2));
 
-      generiqueGroupElement.append(genGroupPre)
+      generiqueGroupElement.append(genGroupPre);
     </script>
   </body>
 </html>
