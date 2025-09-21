@@ -44,11 +44,11 @@ func downloadAndParseAll() error {
 
 	//Files to download
 	var files = map[string]string{
-		"Specialites":   "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_bdpm.txt",
-		"Presentations": "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CIP_bdpm.txt",
-		"Compositions":  "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_COMPO_bdpm.txt",
-		"Generiques":    "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_GENER_bdpm.txt",
-		"Conditions":    "https://base-donnees-publique.medicaments.gouv.fr/telechargement.php?fichier=CIS_CPD_bdpm.txt",
+		"Specialites":   "https://base-donnees-publique.medicaments.gouv.fr/download/file/CIS_bdpm.txt",
+		"Presentations": "https://base-donnees-publique.medicaments.gouv.fr/download/file/CIS_CIP_bdpm.txt",
+		"Compositions":  "https://base-donnees-publique.medicaments.gouv.fr/download/file/CIS_COMPO_bdpm.txt",
+		"Generiques":    "https://base-donnees-publique.medicaments.gouv.fr/download/file/CIS_GENER_bdpm.txt",
+		"Conditions":    "https://base-donnees-publique.medicaments.gouv.fr/download/file/CIS_CPD_bdpm.txt",
 	}
 
 	//Create the files directory if it doesn't exists
