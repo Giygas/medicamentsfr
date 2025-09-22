@@ -167,7 +167,7 @@ func main() {
 	}
 	adressString := os.Getenv("ADRESS")
 	if adressString == "" {
-		log.Fatal("ADRESS is not found in the evironment")
+		adressString = "127.0.0.1" // default to localhost
 	}
 
 	router := chi.NewRouter()
@@ -267,11 +267,16 @@ func main() {
 // Middleware to get real IP from nginx
 func realIPMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		// Check for X-Forwarded-For header first
 		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+			// X-Forwarded-For can contain multiple IPs, take the first one
 			ips := strings.Split(xff, ",")
 			r.RemoteAddr = strings.TrimSpace(ips[0])
 		} else if xri := r.Header.Get("X-Real-IP"); xri != "" {
+			// Fallback to X-Real-IP
 			r.RemoteAddr = xri
+
 		}
 		next.ServeHTTP(w, r)
 	})

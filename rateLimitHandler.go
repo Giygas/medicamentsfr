@@ -68,7 +68,9 @@ func getTokenCost(r *http.Request) int64 {
 	switch r.URL.Path {
 	case "/database":
 		return 500 // Higher cost for full database
+
 	// TODO: better bucket costs
+
 	// case "/database/":
 	// 	return 100 // Medium cost for paged results
 	// case "/medicament/":
