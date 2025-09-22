@@ -1,35 +1,53 @@
 package main
 
 import (
-	"compress/gzip"
-	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 	"github.com/go-chi/chi/v5"
 )
 
-func serveAllMedicaments(w http.ResponseWriter, r *http.Request) {
-	meds := &medicaments
-
-	parsedJson, err := json.Marshal(meds)
-	if err != nil {
-		log.Fatal(err)
-		w.WriteHeader(500)
+// Helper function to check cached versions
+func checkCachedVersion(w http.ResponseWriter, r *http.Request, lastUpdated time.Time) bool {
+	// Check If-Modified-Since
+	if ims := r.Header.Get("If-Modified-Since"); ims != "" {
+		if t, err := time.Parse(http.TimeFormat, ims); err == nil {
+			if !lastUpdated.After(t) {
+				w.WriteHeader(http.StatusNotModified)
+				return true
+			}
+		}
 	}
-	meds = nil
-	// Write the headers for the json response
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Header().Set("Content-Encoding", "gzip")
-	w.Header().Set("Cache-Control", "public, max-age=43200") // caches for half a day
-	w.WriteHeader(200)
-	gz := gzip.NewWriter(w)
-	defer gz.Close()
-	gz.Write(parsedJson)
+	// Check If-None-Match (ETag)
+	if inm := r.Header.Get("If-None-Match"); inm != "" {
+		etag := `"` + strconv.FormatInt(lastUpdated.Unix(), 10) + `"`
+		if inm == etag {
+			w.WriteHeader(http.StatusNotModified)
+			return true
+		}
+	}
+
+	return false
+}
+
+func serveAllMedicaments(w http.ResponseWriter, r *http.Request) {
+	medicaments := GetMedicaments()
+	lastUpdated := GetLastUpdated()
+
+	// Set caching headers
+	w.Header().Set("Cache-Control", "public, max-age=21600") // 6 hours
+	w.Header().Set("Last-Modified", lastUpdated.UTC().Format(http.TimeFormat))
+	w.Header().Set("ETag", `"`+strconv.FormatInt(lastUpdated.Unix(), 10)+`"`)
+
+	// Check if client has cached version
+	if checkCachedVersion(w, r, lastUpdated) {
+		return
+	}
+
+	respondWithJSON(w, 200, medicaments)
 }
 
 func servePagedMedicaments(w http.ResponseWriter, r *http.Request) {
@@ -40,110 +58,162 @@ func servePagedMedicaments(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	// Get the maximal page possible for the medicaments
-	maxPagePossible := len(medicamentsMap) / 10
 
-	if len(medicamentsMap)%10 != 0 {
-		maxPagePossible++
-	}
+	medicaments := GetMedicaments()
+	lastUpdated := GetLastUpdated()
 
-	medicamentsUpper := page * 10
+	// Set caching headers
+	w.Header().Set("Cache-Control", "public, max-age=21600")
+	w.Header().Set("Last-Modified", lastUpdated.UTC().Format(http.TimeFormat))
 
-	// If the upper slice of the medicaments is bigger than the maximum, give an error message and exit
-	if medicamentsUpper > maxPagePossible*10 {
-		respondWithError(w, 404, "Maximum page possible is: "+strconv.Itoa(maxPagePossible))
+	totalItems := len(medicaments)
+	pageSize := 10
+	maxPage := (totalItems + pageSize - 1) / pageSize // Ceiling division
+
+	if page > maxPage {
+		respondWithError(w, 404, "Maximum page possible is: "+strconv.Itoa(maxPage))
 		return
 	}
 
-	medicamentsLower := medicamentsUpper - 10
-
-	if page < maxPagePossible {
-		fmt.Println(medicamentsUpper)
-		respondWithJSON(w, 200, medicaments[medicamentsLower:medicamentsUpper])
-	} else {
-		respondWithJSON(w, 200, medicaments[medicamentsLower:])
+	start := (page - 1) * pageSize
+	end := start + pageSize
+	if end > totalItems {
+		end = totalItems
 	}
+
+	result := struct {
+		Data       []entities.Medicament `json:"data"`
+		Page       int                   `json:"page"`
+		PageSize   int                   `json:"pageSize"`
+		TotalItems int                   `json:"totalItems"`
+		MaxPage    int                   `json:"maxPage"`
+	}{
+		Data:       medicaments[start:end],
+		Page:       page,
+		PageSize:   pageSize,
+		TotalItems: totalItems,
+		MaxPage:    maxPage,
+	}
+
+	respondWithJSON(w, 200, result)
 }
 
 func findMedicament(w http.ResponseWriter, r *http.Request) {
-	matchingMedicaments := make([]entities.Medicament, 0)
-
 	userPattern := chi.URLParam(r, "element")
-	pattern, compileErr := regexp.Compile(`(?i).*` + regexp.QuoteMeta(userPattern) + `.*`)
+	if len(userPattern) < 2 {
+		respondWithError(w, 400, "Search term must be at least 2 characters")
+		return
+	}
 
-	if compileErr != nil {
-		log.Panic("An error has ocurred with the search parameter", compileErr)
-	} else {
-		for _, med := range medicaments {
-			// Search the value in medicament denomination, composition
-			// denomination and generique libelle
+	pattern, err := regexp.Compile(`(?i)` + regexp.QuoteMeta(userPattern))
+	if err != nil {
+		respondWithError(w, 400, "Invalid search pattern")
+		return
+	}
 
-			// For now I'll just use the medicament denomination
-			medOk := pattern.MatchString(med.Denomination)
-			if medOk {
-				matchingMedicaments = append(matchingMedicaments, med)
-			}
+	medicaments := GetMedicaments()
+	var matchingMedicaments []entities.Medicament
+
+	for _, med := range medicaments {
+		if pattern.MatchString(med.Denomination) {
+			matchingMedicaments = append(matchingMedicaments, med)
 		}
 	}
-	if len(matchingMedicaments) > 0 {
-		respondWithJSON(w, 200, matchingMedicaments)
-	} else {
-		respondWithError(w, 404, "No medicaments found that matches the word")
+
+	if len(matchingMedicaments) == 0 {
+		respondWithError(w, 404, "No medicaments found matching the search term")
+		return
 	}
+
+	// Set shorter cache for search results
+	w.Header().Set("Cache-Control", "public, max-age=3600") // 1 hour
+
+	result := struct {
+		Results []entities.Medicament `json:"results"`
+		Count   int                   `json:"count"`
+		// Limited bool                  `json:"limited"`   -- In case of limiting results
+	}{
+		Results: matchingMedicaments,
+		Count:   len(matchingMedicaments),
+		// Limited: len(matchingMedicaments) == maxResults,
+	}
+
+	respondWithJSON(w, 200, result)
+
 }
 
 func findMedicamentById(w http.ResponseWriter, r *http.Request) {
 	cis, err := strconv.Atoi(chi.URLParam(r, "cis"))
 	if err != nil {
-		respondWithError(w, 400, "Bad Request: Not a Number")
+		respondWithError(w, 400, "Invalid CIS number")
 		return
 	}
 
-	medicament, ok := medicamentsMap[cis]
-	if ok {
-		respondWithJSON(w, 200, medicament)
-	} else {
-		respondWithError(w, 404, "No medicaments found with this cis")
+	medicamentsMap := GetMedicamentsMap()
+	medicament, exists := medicamentsMap[cis]
+
+	if !exists {
+		respondWithError(w, 404, "Medicament not found")
+		return
 	}
+
+	// Set caching headers for individual medicaments
+	lastUpdated := GetLastUpdated()
+	w.Header().Set("Cache-Control", "public, max-age=43200") // 12 hours
+	w.Header().Set("Last-Modified", lastUpdated.UTC().Format(http.TimeFormat))
+
+	respondWithJSON(w, 200, medicament)
 }
 
 func findGeneriques(w http.ResponseWriter, r *http.Request) {
-	matchingGeneriques := make([]entities.GeneriqueList, 0)
-
 	userPattern := chi.URLParam(r, "libelle")
-	pattern, compileErr := regexp.Compile(`(?i).*` + regexp.QuoteMeta(userPattern) + `.*`)
-
-	if compileErr != nil {
-		log.Panic("An error has ocurred with the search parameter", compileErr)
-	} else {
-		for _, gen := range generiques {
-			// Search for the generique name in generique libelle
-
-			medOk := pattern.MatchString(gen.Libelle)
-			if medOk {
-				matchingGeneriques = append(matchingGeneriques, gen)
-			}
-		}
-	}
-	if len(matchingGeneriques) > 0 {
-		respondWithJSON(w, 200, matchingGeneriques)
-	} else {
-		respondWithError(w, 404, "No generiques found that matches the word")
-	}
-}
-
-func findGeneriquesByGroupId(w http.ResponseWriter, r *http.Request) {
-
-	groupId, err := strconv.Atoi(chi.URLParam(r, "groupId"))
-	if err != nil {
-		respondWithError(w, 400, "Bad Request: Not a Number")
+	if len(userPattern) < 2 {
+		respondWithError(w, 400, "Search term must be at least 2 characters")
 		return
 	}
 
-	generique, ok := generiquesMap[groupId]
-	if ok {
-		respondWithJSON(w, 200, generique)
-	} else {
-		respondWithError(w, 404, "There are no medicaments in this generique group")
+	pattern, err := regexp.Compile(`(?i)` + regexp.QuoteMeta(userPattern))
+	if err != nil {
+		respondWithError(w, 400, "Invalid search pattern")
+		return
 	}
+
+	generiques := GetGeneriques()
+	var matchingGeneriques []entities.GeneriqueList
+
+	for _, gen := range generiques {
+		if pattern.MatchString(gen.Libelle) {
+			matchingGeneriques = append(matchingGeneriques, gen)
+		}
+	}
+
+	if len(matchingGeneriques) == 0 {
+		respondWithError(w, 404, "No generiques found matching the search term")
+		return
+	}
+
+	w.Header().Set("Cache-Control", "public, max-age=3600")
+	respondWithJSON(w, 200, matchingGeneriques)
+
+}
+
+func findGeneriquesByGroupId(w http.ResponseWriter, r *http.Request) {
+	groupId, err := strconv.Atoi(chi.URLParam(r, "groupId"))
+	if err != nil {
+		respondWithError(w, 400, "Invalid group ID")
+		return
+	}
+
+	generiquesMap := GetGeneriquesMap()
+	generique, exists := generiquesMap[groupId]
+	if !exists {
+		respondWithError(w, 404, "Generique group not found")
+		return
+	}
+
+	lastUpdated := GetLastUpdated()
+	w.Header().Set("Cache-Control", "public, max-age=43200")
+	w.Header().Set("Last-Modified", lastUpdated.UTC().Format(http.TimeFormat))
+
+	respondWithJSON(w, 200, generique)
 }
