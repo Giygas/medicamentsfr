@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
 	"sync/atomic"
+	"syscall"
 	"time"
 
 	"github.com/giygas/medicamentsfr/medicamentsparser"
@@ -186,8 +189,11 @@ func main() {
 	router.Use(rateLimitHandler)
 
 	server := &http.Server{
-		Handler: router,
-		Addr:    adressString + ":" + portString,
+		Handler:      router,
+		Addr:         adressString + ":" + portString,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
 
 	// API routes
@@ -217,15 +223,45 @@ func main() {
 		http.ServeFile(w, r, "html/favicon.ico")
 	})
 
-	fmt.Printf("Starting server at PORT:%v\n", portString)
-	err := server.ListenAndServe()
+	// Channel to listen for interrupt signals
+	quit := make(chan os.Signal, 1)
+	// Register the channel to receive specific signals
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
-	if errors.Is(err, http.ErrServerClosed) {
-		fmt.Printf("server closed\n")
-	} else if err != nil {
-		fmt.Printf("error starting server: %s\n", err)
-		os.Exit(1)
+	// Start the server in a goroutine
+	go func() {
+		fmt.Printf("Starting server at %s:%v\n", adressString, portString)
+		fmt.Printf("Will be accessible via nginx at: http://your-server/medicamentsfr\n")
+
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("Server failed to start: %v\n", err)
+		}
+	}()
+
+	// Block until a signal is received
+	<-quit
+	log.Println("Shutting down server...")
+
+	// Create a context with timeout for shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Attempt graceful shutdown
+	if err := server.Shutdown(ctx); err != nil {
+		log.Printf("Server forced to shutdown: %v", err)
+		// If graceful shutdown fails, force close
+		if err := server.Close(); err != nil {
+			log.Printf("Server close error: %v", err)
+		}
+	} else {
+		log.Println("Server exited gracefully")
 	}
+
+	// Wait a bit for any ongoing requests to complete
+	log.Println("Waiting for ongoing requests to complete...")
+	time.Sleep(2 * time.Second)
+
+	log.Println("Server shutdown complete")
 }
 
 // Middleware to get real IP from nginx
