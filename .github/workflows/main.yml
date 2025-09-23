@@ -30,7 +30,7 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
       - name: Copy file to server
-        run: scp medicamentsfr ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REPO_DIR }}
+        run: scp medicamentsfr html/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REPO_DIR }}
       - name: Replace current running app
         run: |
           ssh ${{ secrets.SSH_USER}}@${{ secrets.SSH_HOST }} "${{ secrets.APP_RESTART }}" 
