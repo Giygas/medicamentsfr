@@ -8,42 +8,61 @@ import (
 	"testing"
 	"time"
 
+	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 	"github.com/go-chi/chi/v5"
 )
 
-func isDatabaseReady() bool {
-	const testCIS = 61266250
-	const testGroup = 1643
-	if (medicamentsMap[testCIS].Cis == testCIS) && (generiquesMap[testGroup].Group == testGroup) {
-		return true
-	}
+// Mock data for testing
+var testMedicaments = []entities.Medicament{
+	{
+		Cis:          1,
+		Denomination: "Test Medicament",
+		Generiques:   []entities.Generique{{Cis: 1, Group: 100, Libelle: "Test Group", Type: "Princeps"}},
+	},
+}
 
-	return false
+var testGeneriques = []entities.GeneriqueList{
+	{
+		GroupId: 100,
+		Libelle: "Test Group",
+		Medicaments: []entities.GeneriqueMedicament{
+			{
+				Cis:                 1,
+				Denomination:        "Test Medicament",
+				FormePharmaceutique: "Tablet",
+				Type:                "Princeps",
+				Composition:         []entities.GeneriqueComposition{},
+			},
+		},
+	},
+}
+
+var testMedicamentsMap = map[int]entities.Medicament{
+	1: testMedicaments[0],
+}
+
+var testGeneriquesMap = map[int]entities.Generique{
+	100: {Cis: 1, Group: 100, Libelle: "Test Group", Type: "Princeps"},
+}
+
+func isDatabaseReady() bool {
+	return len(GetMedicaments()) > 0
 }
 
 func TestMain(m *testing.M) {
+	fmt.Println("Initializing test data...")
+	// Initialize mock data for tests
+	dataContainer.medicaments.Store(testMedicaments)
+	dataContainer.generiques.Store(testGeneriques)
+	dataContainer.medicamentsMap.Store(testMedicamentsMap)
+	dataContainer.generiquesMap.Store(testGeneriquesMap)
+	dataContainer.lastUpdated.Store(time.Now())
+	fmt.Printf("Mock data initialized: %d medicaments, %d generiques\n", len(testMedicaments), len(testGeneriques))
 
-	// Set a timeout for the polling
-	timeout := time.After(15 * time.Second)   // Adjust the timeout as needed
-	tick := time.Tick(500 * time.Millisecond) // Poll every 500ms
-
-	for {
-		select {
-		case <-timeout:
-			fmt.Println("Timeout reached")
-			// Handle the timeout case, e.g., by failing the test
-			fmt.Println("Database did not become ready within the timeout period")
-			return
-		case <-tick:
-			if isDatabaseReady() {
-				fmt.Println("Database is ready")
-				// Proceed with your tests
-				exitVal := m.Run()
-				os.Exit(exitVal)
-				return
-			}
-		}
-	}
+	fmt.Println("Running tests...")
+	exitVal := m.Run()
+	fmt.Printf("Tests completed with exit code: %d\n", exitVal)
+	os.Exit(exitVal)
 }
 
 func TestEndpoints(t *testing.T) {
@@ -55,9 +74,9 @@ func TestEndpoints(t *testing.T) {
 	}{
 
 		{"Test database", "/database", http.StatusOK},
-		{"Test generiques/paracetamol", "/generiques/paracetamol", http.StatusOK},
-		{"Test generiques/group/1643", "/generiques/group/1643", http.StatusOK},
-		{"Test medicament/doli", "/medicament/doli", http.StatusOK},
+		{"Test generiques/Test Group", "/generiques/Test Group", http.StatusOK},
+		{"Test generiques/group/100", "/generiques/group/100", http.StatusOK},
+		{"Test medicament/Test Medicament", "/medicament/Test Medicament", http.StatusOK},
 		{"Test database with a", "/database/a", http.StatusBadRequest},
 		{"Test database with 1", "/database/1", http.StatusOK},
 		{"Test database with 0", "/database/0", http.StatusBadRequest},
@@ -66,7 +85,7 @@ func TestEndpoints(t *testing.T) {
 		{"Test generiques/aaaaaaaaaaa", "/generiques/aaaaaaaaaaa", http.StatusNotFound},
 		{"Test medicament", "/medicament", http.StatusNotFound},
 		{"Test medicament/1000000000000000", "/medicament/100000000000000", http.StatusNotFound},
-		{"Test medicament/id/1", "/medicament/id/1", http.StatusNotFound},
+		{"Test medicament/id/1", "/medicament/id/1", http.StatusOK},
 		{"Test generiques/group/a", "/generiques/group/a", http.StatusBadRequest},
 	}
 
@@ -82,6 +101,7 @@ func TestEndpoints(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
+			fmt.Printf("Testing %s: %s\n", tt.name, tt.endpoint)
 			req, err := http.NewRequest("GET", tt.endpoint, nil)
 
 			if err != nil {
@@ -90,8 +110,12 @@ func TestEndpoints(t *testing.T) {
 
 			rr := httptest.NewRecorder()
 			router.ServeHTTP(rr, req)
-			if status := rr.Code; status != tt.expected {
+			status := rr.Code
+			fmt.Printf("  Status: %d (expected %d)\n", status, tt.expected)
+			if status != tt.expected {
 				t.Errorf("%v returned wrong status code: got %v want %v", tt.endpoint, status, tt.expected)
+			} else {
+				fmt.Printf("  ✓ Passed\n")
 			}
 		})
 	}
