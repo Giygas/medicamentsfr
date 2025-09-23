@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -173,9 +172,10 @@ func main() {
 	router := chi.NewRouter()
 
 	router.Use(middleware.RequestID)
+	router.Use(realIPMiddleware)
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
-	router.Use(realIPMiddleware)
+	router.Use(blockDirectAccessMiddleware)
 
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"*"},
@@ -204,6 +204,7 @@ func main() {
 	router.Get("/generiques/{libelle}", findGeneriques)
 	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupId)
 	router.Get("/health", healthCheck)
+	router.Get("/debug", debugHeaders)
 
 	// Serve documentation with caching
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -264,22 +265,18 @@ func main() {
 	log.Println("Server shutdown complete")
 }
 
-// Middleware to get real IP from nginx
-func realIPMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// TODO: remove this
+func debugHeaders(w http.ResponseWriter, r *http.Request) {
+	headers := map[string]string{
+		"RemoteAddr":        r.RemoteAddr,
+		"X-Real-IP":         r.Header.Get("X-Real-IP"),
+		"X-Forwarded-For":   r.Header.Get("X-Forwarded-For"),
+		"X-Forwarded-Proto": r.Header.Get("X-Forwarded-Proto"),
+		"Host":              r.Header.Get("Host"),
+		"User-Agent":        r.Header.Get("User-Agent"),
+	}
 
-		// Check for X-Forwarded-For header first
-		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-			// X-Forwarded-For can contain multiple IPs, take the first one
-			ips := strings.Split(xff, ",")
-			r.RemoteAddr = strings.TrimSpace(ips[0])
-		} else if xri := r.Header.Get("X-Real-IP"); xri != "" {
-			// Fallback to X-Real-IP
-			r.RemoteAddr = xri
-
-		}
-		next.ServeHTTP(w, r)
-	})
+	respondWithJSON(w, 200, headers)
 }
 
 // Health check endpoint

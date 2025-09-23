@@ -23,7 +23,7 @@ jobs:
       - name: Build
         run: |
           GOOS=linux GOARCH=amd64 go build -o medicamentsfr .
-           ls -la medicamentsfr  # Verify binary exists and show size
+          ls -la medicamentsfr  # Verify binary exists and show size
           file medicamentsfr    # Show file type to confirm it's executable
         
       - name: install ssh keys
@@ -41,11 +41,57 @@ jobs:
       - name: Verify target directory exists
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p ${{ secrets.REPO_DIR }} && ls -la ${{ secrets.REPO_DIR }}"
+
+
+      - name: Stop the service waiting for it's correct shutdown
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            echo "=== Initiating graceful shutdown ==="
+            
+            # Check if service exists and is running
+            if sudo systemctl is-active --quiet medicamentsfr; then
+              echo "Service is running, initiating graceful stop..."
+              
+              # Send graceful stop signal
+              sudo systemctl stop medicamentsfr
+              
+              # Wait for graceful shutdown (max 40 seconds - your timeout is 30s + buffer)
+              echo "Waiting for graceful shutdown to complete..."
+              for i in {1..40}; do
+                if ! sudo systemctl is-active --quiet medicamentsfr; then
+                  echo "Service stopped gracefully after ${i} seconds"
+                  break
+                fi
+                echo "Still shutting down... (${i}/40)"
+                sleep 1
+              done
+              
+              # Force stop if still running (shouldn't happen with proper graceful shutdown)
+              if sudo systemctl is-active --quiet medicamentsfr; then
+                echo "WARNING: Graceful shutdown timed out, forcing stop..."
+                sudo systemctl kill medicamentsfr
+                sleep 2
+              fi
+              
+            else
+              echo "Service is not running"
+            fi
+            
+            # Double-check no processes are left
+            if pgrep -f medicamentsfr > /dev/null; then
+              echo "WARNING: Found lingering processes, cleaning up..."
+              pkill -f medicamentsfr
+              sleep 2
+            fi
+            
+            echo "Service shutdown complete"
+          EOF
+
           
       - name: Copy binary to server
         run: |
           echo "Copying to: ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REPO_DIR }}"
-          scp -v medicamentsfr ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REPO_DIR }}/
+          scp -v medicamentsfr ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REPO_DIR }}
 
       - name: Verify binary was copied
         run: |
