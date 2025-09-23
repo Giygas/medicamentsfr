@@ -74,6 +74,7 @@ func TestEndpoints(t *testing.T) {
 	}{
 
 		{"Test database", "/database", http.StatusOK},
+		{"Test database with trailing slash", "/database/", http.StatusNotFound}, // Chi doesn't handle trailing slash
 		{"Test generiques/Test Group", "/generiques/Test Group", http.StatusOK},
 		{"Test generiques/group/100", "/generiques/group/100", http.StatusOK},
 		{"Test medicament/Test Medicament", "/medicament/Test Medicament", http.StatusOK},
@@ -81,12 +82,17 @@ func TestEndpoints(t *testing.T) {
 		{"Test database with 1", "/database/1", http.StatusOK},
 		{"Test database with 0", "/database/0", http.StatusBadRequest},
 		{"Test database with -1", "/database/-1", http.StatusBadRequest},
+		{"Test database with large number", "/database/10000", http.StatusNotFound}, // Only 1 page available
 		{"Test generiques", "/generiques", http.StatusNotFound},
 		{"Test generiques/aaaaaaaaaaa", "/generiques/aaaaaaaaaaa", http.StatusNotFound},
 		{"Test medicament", "/medicament", http.StatusNotFound},
 		{"Test medicament/1000000000000000", "/medicament/100000000000000", http.StatusNotFound},
 		{"Test medicament/id/1", "/medicament/id/1", http.StatusOK},
+		{"Test medicament/id/999999", "/medicament/id/999999", http.StatusNotFound},
 		{"Test generiques/group/a", "/generiques/group/a", http.StatusBadRequest},
+		{"Test generiques/group/999999", "/generiques/group/999999", http.StatusNotFound},
+		{"Test health", "/health", http.StatusOK},
+		{"Test debug", "/debug", http.StatusOK},
 	}
 
 	router := chi.NewRouter()
@@ -98,6 +104,8 @@ func TestEndpoints(t *testing.T) {
 	router.Get("/medicament/id/{cis}", findMedicamentById)
 	router.Get("/generiques/{libelle}", findGeneriques)
 	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupId)
+	router.Get("/health", healthCheck)
+	router.Get("/debug", debugHeaders)
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
@@ -119,4 +127,58 @@ func TestEndpoints(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRealIPMiddleware(t *testing.T) {
+	fmt.Println("Testing realIPMiddleware...")
+
+	router := chi.NewRouter()
+	router.Use(realIPMiddleware)
+	router.Get("/test", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(r.RemoteAddr))
+	})
+
+	// Test with X-Forwarded-For header
+	req, _ := http.NewRequest("GET", "/test", nil)
+	req.Header.Set("X-Forwarded-For", "192.168.1.1")
+	req.RemoteAddr = "127.0.0.1:12345"
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+
+	if rr.Body.String() != "192.168.1.1:0" {
+		t.Errorf("Expected IP 192.168.1.1:0, got %s", rr.Body.String())
+	}
+
+	fmt.Println("realIPMiddleware test completed")
+}
+
+func TestBlockDirectAccessMiddleware(t *testing.T) {
+	fmt.Println("Testing blockDirectAccessMiddleware...")
+
+	router := chi.NewRouter()
+	router.Use(blockDirectAccessMiddleware)
+	router.Get("/test", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("allowed"))
+	})
+
+	// Test without nginx headers (should be blocked)
+	req, _ := http.NewRequest("GET", "/test", nil)
+	req.RemoteAddr = "192.168.1.1:12345"
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusForbidden {
+		t.Errorf("Expected 403, got %d", rr.Code)
+	}
+
+	// Test with X-Forwarded-For header (should be allowed)
+	req.Header.Set("X-Forwarded-For", "192.168.1.1")
+	rr = httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("Expected 200, got %d", rr.Code)
+	}
+
+	fmt.Println("blockDirectAccessMiddleware test completed")
 }

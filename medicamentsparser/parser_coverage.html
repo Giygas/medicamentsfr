@@ -1,0 +1,859 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>medicamentsparser: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/giygas/medicamentsfr/medicamentsparser/downloader.go (85.3%)</option>
+				
+				<option value="file1">github.com/giygas/medicamentsfr/medicamentsparser/fileReader.go (15.0%)</option>
+				
+				<option value="file2">github.com/giygas/medicamentsfr/medicamentsparser/generiquesParser.go (87.1%)</option>
+				
+				<option value="file3">github.com/giygas/medicamentsfr/medicamentsparser/medicamentParser.go (98.7%)</option>
+				
+				<option value="file4">github.com/giygas/medicamentsfr/medicamentsparser/tsvConverter.go (84.5%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package medicamentsparser
+
+import (
+        "bufio"
+        "fmt"
+        "net/http"
+        "os"
+        "path/filepath"
+        "sync"
+
+        "golang.org/x/text/encoding/charmap"
+)
+
+func downloadAndParseFile(filepath string, url string) error <span class="cov8" title="1">{
+
+        filepath = "files/" + filepath + ".txt"
+        response, err := http.Get(url)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov8" title="1">defer response.Body.Close()
+
+        outFile, err := os.Create(filepath)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+
+        <span class="cov8" title="1">defer outFile.Close()
+        reader := charmap.Windows1252.NewDecoder().Reader(response.Body)
+        scanner := bufio.NewScanner(reader)
+
+        for scanner.Scan() </span><span class="cov8" title="1">{
+                _, err = fmt.Fprintln(outFile, scanner.Text())
+                if err != nil </span><span class="cov0" title="0">{
+                        panic(err)</span>
+                }
+        }
+        <span class="cov8" title="1">fmt.Println("Downloaded: " + filepath)
+        return nil</span>
+}
+
+// Download all files concurrently
+func downloadAndParseAll() error <span class="cov8" title="1">{
+
+        //Files to download
+        var files = map[string]string{
+                "Specialites":   "https://base-donnees-publique.medicaments.gouv.fr/download/file/CIS_bdpm.txt",
+                "Presentations": "https://base-donnees-publique.medicaments.gouv.fr/download/file/CIS_CIP_bdpm.txt",
+                "Compositions":  "https://base-donnees-publique.medicaments.gouv.fr/download/file/CIS_COMPO_bdpm.txt",
+                "Generiques":    "https://base-donnees-publique.medicaments.gouv.fr/download/file/CIS_GENER_bdpm.txt",
+                "Conditions":    "https://base-donnees-publique.medicaments.gouv.fr/download/file/CIS_CPD_bdpm.txt",
+        }
+
+        //Create the files directory if it doesn't exists
+        filePath := filepath.Join(".", "files")
+        err := os.MkdirAll(filePath, os.ModePerm)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+        <span class="cov8" title="1">filePath = filepath.Join(".", "src")
+        err = os.MkdirAll(filePath, os.ModePerm)
+        if err != nil </span><span class="cov0" title="0">{
+                panic(err)</span>
+        }
+
+        <span class="cov8" title="1">var wg sync.WaitGroup
+
+        for fileName, url := range files </span><span class="cov8" title="1">{
+                wg.Add(1)
+
+                go func(file string, url string) </span><span class="cov8" title="1">{
+                        defer wg.Done()
+                        downloadAndParseFile(file, url)
+                }</span>(fileName, url)
+
+        }
+        <span class="cov8" title="1">wg.Wait()
+
+        return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package medicamentsparser
+
+import (
+        "encoding/json"
+        "log"
+        "os"
+
+        "github.com/giygas/medicamentsfr/medicamentsparser/entities"
+)
+
+func specialitesFileToJSON() []entities.Specialite <span class="cov0" title="0">{
+        fileData, err := os.ReadFile("src/Specialites.json")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error reading file:", err)
+        }</span>
+
+        <span class="cov0" title="0">var specialites []entities.Specialite
+        err = json.Unmarshal(fileData, &amp;specialites)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error decoding JSON:", err)
+        }</span>
+
+        //Returns the full Specialites json as a slice of Specialites
+        <span class="cov0" title="0">return specialites</span>
+}
+
+func compositionFileToJSON() []entities.Composition <span class="cov0" title="0">{
+        fileData, err := os.ReadFile("src/Compositions.json")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error reading file:", err)
+        }</span>
+
+        <span class="cov0" title="0">var data []entities.Composition
+        err = json.Unmarshal(fileData, &amp;data)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error decoding JSON:", err)
+        }</span>
+
+        //Returns the full Composition json as a slice of Composition
+        <span class="cov0" title="0">return data</span>
+}
+
+func conditionFileToJSON() []entities.Condition <span class="cov0" title="0">{
+        fileData, err := os.ReadFile("src/Conditions.json")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error reading file:", err)
+        }</span>
+
+        <span class="cov0" title="0">var data []entities.Condition
+        err = json.Unmarshal(fileData, &amp;data)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error decoding JSON:", err)
+        }</span>
+
+        //Returns the full Condition json as a slice of Condition
+        <span class="cov0" title="0">return data</span>
+}
+
+func generiqueFileToJSON() map[string][]int <span class="cov8" title="1">{
+        fileData, err := os.ReadFile("src/Generiques.json")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error reading file:", err)
+        }</span>
+
+        <span class="cov8" title="1">var data map[string][]int
+
+        err = json.Unmarshal(fileData, &amp;data)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error decoding JSON:", err)
+        }</span>
+
+        //Returns the full Generique json as a slice of Generique
+        <span class="cov8" title="1">return data</span>
+}
+
+func presentationFileToJSON() []entities.Presentation <span class="cov0" title="0">{
+        fileData, err := os.ReadFile("src/Presentations.json")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error reading file:", err)
+        }</span>
+
+        <span class="cov0" title="0">var data []entities.Presentation
+        err = json.Unmarshal(fileData, &amp;data)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error decoding JSON:", err)
+        }</span>
+
+        //Returns the full Presentation json as a slice of Presentation
+        <span class="cov0" title="0">return data</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package medicamentsparser
+
+import (
+        "encoding/json"
+        "log"
+        "os"
+        "strconv"
+
+        "github.com/giygas/medicamentsfr/medicamentsparser/entities"
+)
+
+var generiquesList []entities.GeneriqueList
+var medsType map[int]string
+
+func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities.Medicament) ([]entities.GeneriqueList, map[int]entities.Generique) <span class="cov8" title="1">{
+        // allGeneriques: []Generique
+        allGeneriques := makeGeneriques(nil)
+        // Create a map of all the generiques to reduce algorithm complexity
+        generiquesMap := make(map[int]entities.Generique)
+        for i := range allGeneriques </span><span class="cov8" title="1">{
+                generiquesMap[allGeneriques[i].Group] = allGeneriques[i]
+        }</span>
+
+        // generiques file: [groupid]:[]cis of medicaments in the same group
+        <span class="cov8" title="1">generiquesFile := generiqueFileToJSON()
+
+        // The medsType is a map where the key are the medicament cis and the value is the
+        // type of generique
+        medsType = createMedicamentGeneriqueType()
+
+        var generiques []entities.GeneriqueList
+
+        for i, v := range generiquesFile </span><span class="cov8" title="1">{
+
+                // Convert the string index to integer
+                groupInt, err := strconv.Atoi(i)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Println("An error ocurred converting the generiques group to integer", err)
+                }</span>
+
+                <span class="cov8" title="1">current := entities.GeneriqueList{
+                        GroupId:     groupInt,
+                        Libelle:     generiquesMap[groupInt].Libelle,
+                        Medicaments: getMedicamentsInArray(v, mMap),
+                }
+
+                generiques = append(generiques, current)</span>
+        }
+
+        <span class="cov8" title="1">marshalledGeneriques, err := json.MarshalIndent(generiques, "", " ")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Println("An error has occurred when marshalling generiques", err)
+        }</span>
+        <span class="cov8" title="1">_ = os.WriteFile("src/GeneriquesFull.json", marshalledGeneriques, 0644)
+        log.Println("GeneriquesFull.json created")
+        return generiques, generiquesMap</span>
+}
+
+func createGeneriqueComposition(medicamentComposition *[]entities.Composition) []entities.GeneriqueComposition <span class="cov8" title="1">{
+        var compositions []entities.GeneriqueComposition
+        for _, v := range *medicamentComposition </span><span class="cov0" title="0">{
+                compo := entities.GeneriqueComposition{
+                        ElementParmaceutique:  v.ElementParmaceutique,
+                        DenominationSubstance: v.DenominationSubstance,
+                        Dosage:                v.Dosage,
+                }
+                compositions = append(compositions, compo)
+        }</span>
+        <span class="cov8" title="1">return compositions</span>
+}
+
+func getMedicamentsInArray(medicamentsIds []int, medicamentMap *map[int]entities.Medicament) []entities.GeneriqueMedicament <span class="cov8" title="1">{
+        var medicamentsArray []entities.GeneriqueMedicament
+
+        for _, v := range medicamentsIds </span><span class="cov8" title="1">{
+                if medicament, ok := (*medicamentMap)[v]; ok </span><span class="cov8" title="1">{
+                        generiqueComposition := createGeneriqueComposition(&amp;medicament.Composition)
+                        generiqueMed := entities.GeneriqueMedicament{
+                                Cis:                 (medicament.Cis),
+                                Denomination:        (medicament.Denomination),
+                                FormePharmaceutique: (medicament.FormePharmaceutique),
+                                Type:                medsType[medicament.Cis],
+                                Composition:         generiqueComposition,
+                        }
+                        medicamentsArray = append(medicamentsArray, generiqueMed)
+                }</span>
+        }
+
+        <span class="cov8" title="1">return medicamentsArray</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package medicamentsparser
+
+import (
+        "encoding/json"
+        "fmt"
+        "log"
+        "os"
+        "sync"
+
+        "github.com/giygas/medicamentsfr/medicamentsparser/entities"
+)
+
+func ParseAllMedicaments() []entities.Medicament <span class="cov8" title="1">{
+        // Download the neccesary files from https://base-donnees-publique.medicaments.gouv.fr/telechargement.php
+        downloadAndParseAll()
+
+        //Make all the json files concurrently
+        var wg sync.WaitGroup
+        wg.Add(5)
+
+        conditionsChan := make(chan []entities.Condition)
+        presentationsChan := make(chan []entities.Presentation)
+        specialitesChan := make(chan []entities.Specialite)
+        generiquesChan := make(chan []entities.Generique)
+        compositionsChan := make(chan []entities.Composition)
+
+        go func() </span><span class="cov8" title="1">{
+                conditionsChan &lt;- makeConditions(&amp;wg)
+        }</span>()
+
+        <span class="cov8" title="1">go func() </span><span class="cov8" title="1">{
+                presentationsChan &lt;- makePresentations(&amp;wg)
+        }</span>()
+
+        <span class="cov8" title="1">go func() </span><span class="cov8" title="1">{
+                specialitesChan &lt;- makeSpecialites(&amp;wg)
+        }</span>()
+
+        <span class="cov8" title="1">go func() </span><span class="cov8" title="1">{
+                generiquesChan &lt;- makeGeneriques(&amp;wg)
+        }</span>()
+
+        <span class="cov8" title="1">go func() </span><span class="cov8" title="1">{
+                compositionsChan &lt;- makeCompositions(&amp;wg)
+        }</span>()
+
+        <span class="cov8" title="1">wg.Wait()
+
+        conditions := &lt;-conditionsChan
+        presentations := &lt;-presentationsChan
+        specialites := &lt;-specialitesChan
+        generiques := &lt;-generiquesChan
+        compositions := &lt;-compositionsChan
+
+        conditionsChan = nil
+        presentationsChan = nil
+        specialitesChan = nil
+        generiquesChan = nil
+        compositionsChan = nil
+
+        var medicamentsSlice []entities.Medicament
+
+        for _, med := range specialites </span><span class="cov8" title="1">{
+
+                medicament := new(entities.Medicament)
+
+                medicament.Cis = med.Cis
+                medicament.Denomination = med.Denomination
+                medicament.FormePharmaceutique = med.FormePharmaceutique
+                medicament.VoiesAdministration = med.VoiesAdministration
+                medicament.StatusAutorisation = med.StatusAutorisation
+                medicament.TypeProcedure = med.TypeProcedure
+                medicament.EtatComercialisation = med.EtatComercialisation
+                medicament.DateAMM = med.DateAMM
+                medicament.Titulaire = med.Titulaire
+                medicament.SurveillanceRenforcee = med.SurveillanceRenforcee
+
+                var wg sync.WaitGroup
+
+                wg.Add(4)
+                // Get all the compositions of this medicament
+                go func(id int) </span><span class="cov8" title="1">{
+                        defer wg.Done()
+                        for _, v := range compositions </span><span class="cov8" title="1">{
+                                if id == v.Cis </span><span class="cov8" title="1">{
+                                        medicament.Composition = append(medicament.Composition, v)
+                                }</span>
+                        }
+                }(med.Cis)
+
+                // Get all the generiques of this medicament
+                <span class="cov8" title="1">go func(id int) </span><span class="cov8" title="1">{
+                        defer wg.Done()
+                        for _, v := range generiques </span><span class="cov8" title="1">{
+                                if id == v.Cis </span><span class="cov8" title="1">{
+                                        medicament.Generiques = append(medicament.Generiques, v)
+                                }</span>
+                        }
+                }(med.Cis)
+
+                // Get all the presentations of this medicament
+                <span class="cov8" title="1">go func(id int) </span><span class="cov8" title="1">{
+                        defer wg.Done()
+                        for _, v := range presentations </span><span class="cov8" title="1">{
+                                if id == v.Cis </span><span class="cov8" title="1">{
+                                        medicament.Presentation = append(medicament.Presentation, v)
+                                }</span>
+                        }
+                }(med.Cis)
+
+                // Get the conditions of this medicament
+                <span class="cov8" title="1">go func(id int) </span><span class="cov8" title="1">{
+                        defer wg.Done()
+                        for _, v := range conditions </span><span class="cov8" title="1">{
+                                if id == v.Cis </span><span class="cov8" title="1">{
+                                        medicament.Conditions = append(medicament.Conditions, v.Condition)
+                                }</span>
+                        }
+                }(med.Cis)
+
+                <span class="cov8" title="1">wg.Wait()
+                medicamentsSlice = append(medicamentsSlice, *medicament)</span>
+
+        }
+
+        <span class="cov8" title="1">jsonMedicament, err := json.MarshalIndent(medicamentsSlice, "", "  ")
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Println("error:", err)
+        }</span>
+
+        <span class="cov8" title="1">_ = os.WriteFile("src/Medicaments.json", jsonMedicament, 0644)
+        log.Println("Medicaments.json created")
+
+        conditions = nil
+        presentations = nil
+        specialites = nil
+        generiques = nil
+        compositions = nil
+
+        return medicamentsSlice</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package medicamentsparser
+
+import (
+        "bufio"
+        "encoding/json"
+        "log"
+        "math"
+        "os"
+        "strconv"
+        "strings"
+        "sync"
+
+        "github.com/giygas/medicamentsfr/medicamentsparser/entities"
+)
+
+func makePresentations(wg *sync.WaitGroup) []entities.Presentation <span class="cov8" title="1">{
+        defer wg.Done()
+
+        tsvFile, err := os.Open("files/Presentations.txt")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error opening file", err)
+        }</span>
+        <span class="cov8" title="1">defer tsvFile.Close()
+
+        scanner := bufio.NewScanner(tsvFile)
+
+        var jsonRecords []entities.Presentation
+
+        for scanner.Scan() </span><span class="cov8" title="1">{
+                line := scanner.Text()
+                fields := strings.Split(line, "\t")
+
+                cis, err := strconv.Atoi(fields[0])
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error converting to int cis in %s, Presentations file ERROR: %s", fields[0], err)
+                }</span>
+
+                <span class="cov8" title="1">cip7, err := strconv.Atoi(fields[1])
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error converting to int cip7 in %s, Presentations file, ERROR: %s", fields[1], err)
+                }</span>
+
+                <span class="cov8" title="1">cip13, err := strconv.Atoi(fields[6])
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error converting to int cip13 in %s, Presentations file, ERROR: %s", fields[6], err)
+                }</span>
+
+                // Because the downloaded database has commas as thousands and decimal separators,
+                // all the commas have to be removed except for the last one
+                // If the prix is empty, 0.0 will we added in the prix section
+                <span class="cov8" title="1">var prix float32
+
+                if fields[9] != "" </span><span class="cov8" title="1">{
+
+                        // Count the number of commas
+                        numCommas := strings.Count(fields[9], ",")
+
+                        // If there's more than one comma, replace all but the last one
+                        if numCommas &gt; 1 </span><span class="cov8" title="1">{
+                                fields[9] = strings.Replace(fields[9], ",", "", numCommas-1)
+                        }</span>
+
+                        // Replace the last comma with a period
+                        <span class="cov8" title="1">p, err := strconv.ParseFloat(strings.Replace(fields[9], ",", ".", -1), 32)
+
+                        if err != nil </span><span class="cov0" title="0">{
+                                log.Fatalf("Error removing extra commas in %s, Presentations file, ERROR: %s", fields[9], err)
+                                log.Fatal(err)
+                        }</span>
+                        <span class="cov8" title="1">p = math.Trunc(p*100) / 100
+
+                        prix = float32(p)</span>
+                } else<span class="cov8" title="1"> {
+                        prix = 0.0
+                }</span>
+
+                <span class="cov8" title="1">record := entities.Presentation{
+                        Cis:                  cis,
+                        Cip7:                 cip7,
+                        Libelle:              fields[2],
+                        StatusAdministratif:  fields[3],
+                        EtatComercialisation: fields[4],
+                        DateDeclaration:      fields[5],
+                        Cip13:                cip13,
+                        Agreement:            fields[7],
+                        TauxRemboursement:    fields[8],
+                        Prix:                 prix,
+                }
+
+                jsonRecords = append(jsonRecords, record)</span>
+        }
+
+        <span class="cov8" title="1">log.Println("Presentations done")
+        return jsonRecords</span>
+}
+
+func makeGeneriques(wg *sync.WaitGroup) []entities.Generique <span class="cov8" title="1">{
+        if wg != nil </span><span class="cov8" title="1">{
+                defer wg.Done()
+        }</span> else<span class="cov8" title="1"> {
+                log.Println("Second creation of generiques for the mapping of the medicaments")
+        }</span>
+
+        <span class="cov8" title="1">tsvFile, err := os.Open("files/Generiques.txt")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error opening file", err)
+        }</span>
+        <span class="cov8" title="1">defer tsvFile.Close()
+
+        scanner := bufio.NewScanner(tsvFile)
+
+        // Create the variables to use in the loop
+        var jsonRecords []entities.Generique
+
+        // Use a map for creating the generiques list
+        generiquesList := make(map[int][]int)
+
+        for scanner.Scan() </span><span class="cov8" title="1">{
+                line := scanner.Text()
+                fields := strings.Split(line, "\t")
+
+                cis, err := strconv.Atoi(fields[2])
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error converting to int cis in %s, Generiques file ERROR: %s", fields[2], err)
+
+                }</span>
+
+                <span class="cov8" title="1">group, err := strconv.Atoi(fields[0])
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error converting to int group in %s, Generiques file ERROR: %s", fields[0], err)
+                }</span>
+
+                <span class="cov8" title="1">var generiqueType string
+
+                switch fields[3] </span>{
+                case "0":<span class="cov8" title="1">
+                        generiqueType = "Princeps"</span>
+                case "1":<span class="cov8" title="1">
+                        generiqueType = "Générique"</span>
+                case "2":<span class="cov8" title="1">
+                        generiqueType = "Génériques par complémentarité posologique"</span>
+                case "3":<span class="cov0" title="0">
+                        generiqueType = "Générique substitutable"</span>
+                }
+
+                <span class="cov8" title="1">record := entities.Generique{
+                        Cis:     cis,
+                        Group:   group,
+                        Libelle: fields[1],
+                        Type:    generiqueType,
+                }
+
+                jsonRecords = append(jsonRecords, record)
+
+                // Append to the array of generiques
+                if cis != 0 </span><span class="cov8" title="1">{
+                        generiquesList[group] = append(generiquesList[group], cis)
+                }</span>
+        }
+
+        <span class="cov8" title="1">jsonGeneriques, err := json.MarshalIndent(generiquesList, "", "  ")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Println("Error ocurred when marshalling generiques\n", err)
+        }</span>
+        <span class="cov8" title="1">if wg != nil </span><span class="cov8" title="1">{
+                log.Println("Generiques done")
+                _ = os.WriteFile("src/Generiques.json", jsonGeneriques, 0644)
+                log.Println("Generiques.json created (List of generiques)")
+        }</span>
+
+        <span class="cov8" title="1">return jsonRecords</span>
+}
+
+func makeCompositions(wg *sync.WaitGroup) []entities.Composition <span class="cov8" title="1">{
+        defer wg.Done()
+
+        tsvFile, err := os.Open("files/Compositions.txt")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error opening file", err)
+        }</span>
+        <span class="cov8" title="1">defer tsvFile.Close()
+
+        scanner := bufio.NewScanner(tsvFile)
+
+        var jsonRecords []entities.Composition
+
+        for scanner.Scan() </span><span class="cov8" title="1">{
+                line := scanner.Text()
+                fields := strings.Split(line, "\t")
+
+                cis, err := strconv.Atoi(fields[0])
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error converting to int cis in %s, Compositions file ERROR: %s", fields[0], err)
+                }</span>
+
+                <span class="cov8" title="1">codeS, err := strconv.Atoi(fields[2])
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error converting to int codeSubstance in %s, Compositions file ERROR: %s", fields[2], err)
+
+                }</span>
+
+                <span class="cov8" title="1">record := entities.Composition{
+                        Cis:                   cis,
+                        ElementParmaceutique:  fields[1],
+                        CodeSubstance:         codeS,
+                        DenominationSubstance: fields[3],
+                        Dosage:                fields[4],
+                        ReferenceDosage:       fields[5],
+                        NatureComposant:       fields[6],
+                }
+
+                jsonRecords = append(jsonRecords, record)</span>
+        }
+
+        <span class="cov8" title="1">log.Println("Compositions done")
+        return jsonRecords</span>
+}
+
+func makeSpecialites(wg *sync.WaitGroup) []entities.Specialite <span class="cov8" title="1">{
+        defer wg.Done()
+
+        tsvFile, err := os.Open("files/Specialites.txt")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error opening file", err)
+        }</span>
+        <span class="cov8" title="1">defer tsvFile.Close()
+
+        scanner := bufio.NewScanner(tsvFile)
+
+        var jsonRecords []entities.Specialite
+
+        for scanner.Scan() </span><span class="cov8" title="1">{
+                line := scanner.Text()
+                fields := strings.Split(line, "\t")
+
+                cis, err := strconv.Atoi(fields[0])
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error converting to int cis in %s, Specialites file, ERROR: %s", fields[0], err)
+                }</span>
+
+                <span class="cov8" title="1">record := entities.Specialite{
+                        Cis:                   cis,
+                        Denomination:          fields[1],
+                        FormePharmaceutique:   fields[2],
+                        VoiesAdministration:   strings.Split(fields[3], ";"),
+                        StatusAutorisation:    fields[4],
+                        TypeProcedure:         fields[5],
+                        EtatComercialisation:  fields[6],
+                        DateAMM:               fields[7],
+                        Titulaire:             strings.TrimLeft(fields[10], " "),
+                        SurveillanceRenforcee: fields[11],
+                }
+
+                jsonRecords = append(jsonRecords, record)</span>
+        }
+
+        <span class="cov8" title="1">log.Println("Specialites done")
+        return jsonRecords</span>
+}
+
+func makeConditions(wg *sync.WaitGroup) []entities.Condition <span class="cov8" title="1">{
+        defer wg.Done()
+
+        tsvFile, err := os.Open("files/Conditions.txt")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error opening file", err)
+        }</span>
+        <span class="cov8" title="1">defer tsvFile.Close()
+
+        scanner := bufio.NewScanner(tsvFile)
+
+        var jsonRecords []entities.Condition
+
+        for scanner.Scan() </span><span class="cov8" title="1">{
+                line := scanner.Text()
+                fields := strings.Split(line, "\t")
+
+                // For some weird reason, the csv file from the site has some empty lines between the data
+                if len(line) == 0 </span><span class="cov8" title="1">{
+                        continue</span>
+                }
+
+                <span class="cov8" title="1">cis, err := strconv.Atoi(fields[0])
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatalf("Error converting to int cis in %s, Conditions file, ERROR: %s", fields[0], err)
+                }</span>
+
+                <span class="cov8" title="1">record := entities.Condition{
+                        Cis:       cis,
+                        Condition: fields[1],
+                }
+
+                jsonRecords = append(jsonRecords, record)</span>
+        }
+
+        <span class="cov8" title="1">log.Println("Conditions done")
+        return jsonRecords</span>
+}
+
+// Creates a mapping where the key is the medicament cis and the value is the type of generique of the medicament
+// Returns a map where key:cis and value:typeOfGenerique
+func createMedicamentGeneriqueType() map[int]string <span class="cov8" title="1">{
+        medsType := make(map[int]string)
+
+        tsvFile, err := os.Open("files/Generiques.txt")
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Error opening file", err)
+        }</span>
+        <span class="cov8" title="1">defer tsvFile.Close()
+
+        scanner := bufio.NewScanner(tsvFile)
+
+        for scanner.Scan() </span><span class="cov8" title="1">{
+                line := scanner.Text()
+                fields := strings.Split(line, "\t")
+
+                cis, err := strconv.Atoi(fields[2])
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatal(err)
+                }</span>
+
+                <span class="cov8" title="1">var generiqueType string
+
+                switch fields[3] </span>{
+                case "0":<span class="cov8" title="1">
+                        generiqueType = "Princeps"</span>
+                case "1":<span class="cov0" title="0">
+                        generiqueType = "Générique"</span>
+                case "2":<span class="cov0" title="0">
+                        generiqueType = "Génériques par complémentarité posologique"</span>
+                case "3":<span class="cov0" title="0">
+                        generiqueType = "Générique substitutable"</span>
+                }
+
+                <span class="cov8" title="1">medsType[cis] = generiqueType</span>
+        }
+
+        <span class="cov8" title="1">return medsType</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
