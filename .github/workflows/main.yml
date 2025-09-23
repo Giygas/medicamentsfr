@@ -19,9 +19,13 @@ jobs:
           go-version-file: "go.mod"
 
       - name: Install dependencies
-        run: go install .
+        run: go mod download
       - name: Build
-        run: GOOS=linux GOARCH=amd64 go build
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o medicamentsfr .
+           ls -la medicamentsfr  # Verify binary exists and show size
+          file medicamentsfr    # Show file type to confirm it's executable
+        
       - name: install ssh keys
         # check this thread to understand why its needed:
         # https://stackoverflow.com/a/70447517
@@ -29,11 +33,50 @@ jobs:
           install -m 600 -D /dev/null ~/.ssh/id_rsa
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-      - name: Copy file to server
-        run: scp medicamentsfr html/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REPO_DIR }}
-      - name: Replace current running app
+          
+      - name: Test SSH connection
         run: |
-          ssh ${{ secrets.SSH_USER}}@${{ secrets.SSH_HOST }} "${{ secrets.APP_RESTART }}" 
-          exit
+          ssh -o ConnectTimeout=10 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo 'SSH connection successful'"
+          
+      - name: Verify target directory exists
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p ${{ secrets.REPO_DIR }} && ls -la ${{ secrets.REPO_DIR }}"
+          
+      - name: Copy binary to server
+        run: |
+          echo "Copying to: ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REPO_DIR }}"
+          scp -v medicamentsfr ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REPO_DIR }}/
+
+      - name: Verify binary was copied
+        run: |
+          echo "=== Checking if binary exists after copy ==="
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+            echo "Contents of ${{ secrets.REPO_DIR }}:"
+            ls -la ${{ secrets.REPO_DIR }}
+            echo ""
+            echo "Specifically looking for medicamentsfr:"
+            ls -la ${{ secrets.REPO_DIR }}/medicamentsfr || echo "BINARY NOT FOUND!"
+            echo ""
+            echo "File type and permissions:"
+            file ${{ secrets.REPO_DIR }}/medicamentsfr || echo "Cannot check file type - file missing"
+          EOF
+
+      - name: Copy html files
+        run: |
+          # Copy html directory if it exists
+          if [ -d html ]; then
+            scp -r html ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.REPO_DIR }}/
+          fi
+          
+
+      - name: Set permissions and restart app
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+            cd ${{ secrets.REPO_DIR }}
+            chmod +x medicamentsfr
+            ls -la medicamentsfr  # Verify file is there and executable
+            ${{ secrets.APP_RESTART }}
+          EOF
+          
       - name: cleanup
         run: rm -rf ~/.ssh
