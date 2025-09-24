@@ -119,15 +119,15 @@ func makeGeneriques(wg *sync.WaitGroup) []entities.Generique {
 		line := scanner.Text()
 		fields := strings.Split(line, "\t")
 
-		cis, err := strconv.Atoi(fields[2])
+		cis, cisError := strconv.Atoi(fields[2])
 		if err != nil {
-			log.Fatalf("Error converting to int cis in %s, Generiques file ERROR: %s", fields[2], err)
+			log.Fatalf("Error converting to int cis in %s, Generiques file ERROR: %s", fields[2], cisError)
 
 		}
 
-		group, err := strconv.Atoi(fields[0])
+		group, groupErr := strconv.Atoi(fields[0])
 		if err != nil {
-			log.Fatalf("Error converting to int group in %s, Generiques file ERROR: %s", fields[0], err)
+			log.Fatalf("Error converting to int group in %s, Generiques file ERROR: %s", fields[0], groupErr)
 		}
 
 		var generiqueType string
