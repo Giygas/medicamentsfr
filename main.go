@@ -162,9 +162,9 @@ func main() {
 
 	portString := os.Getenv("PORT")
 	if portString == "" {
-		log.Fatal("PORT is not found in the evironment")
+		log.Fatal("PORT is not found in the environment")
 	}
-	adressString := os.Getenv("ADRESS")
+	adressString := os.Getenv("ADDRESS")
 	if adressString == "" {
 		adressString = "127.0.0.1" // default to localhost
 	}
@@ -204,7 +204,6 @@ func main() {
 	router.Get("/generiques/{libelle}", findGeneriques)
 	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupId)
 	router.Get("/health", healthCheck)
-	router.Get("/debug", debugHeaders)
 
 	// Serve documentation with caching
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -263,20 +262,6 @@ func main() {
 	time.Sleep(2 * time.Second)
 
 	log.Println("Server shutdown complete")
-}
-
-// TODO: remove this
-func debugHeaders(w http.ResponseWriter, r *http.Request) {
-	headers := map[string]string{
-		"RemoteAddr":        r.RemoteAddr,
-		"X-Real-IP":         r.Header.Get("X-Real-IP"),
-		"X-Forwarded-For":   r.Header.Get("X-Forwarded-For"),
-		"X-Forwarded-Proto": r.Header.Get("X-Forwarded-Proto"),
-		"Host":              r.Header.Get("Host"),
-		"User-Agent":        r.Header.Get("User-Agent"),
-	}
-
-	respondWithJSON(w, 200, headers)
 }
 
 // Health check endpoint

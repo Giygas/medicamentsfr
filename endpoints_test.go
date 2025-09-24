@@ -92,7 +92,6 @@ func TestEndpoints(t *testing.T) {
 		{"Test generiques/group/a", "/generiques/group/a", http.StatusBadRequest},
 		{"Test generiques/group/999999", "/generiques/group/999999", http.StatusNotFound},
 		{"Test health", "/health", http.StatusOK},
-		{"Test debug", "/debug", http.StatusOK},
 	}
 
 	router := chi.NewRouter()
@@ -105,7 +104,6 @@ func TestEndpoints(t *testing.T) {
 	router.Get("/generiques/{libelle}", findGeneriques)
 	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupId)
 	router.Get("/health", healthCheck)
-	router.Get("/debug", debugHeaders)
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
