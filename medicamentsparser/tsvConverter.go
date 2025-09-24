@@ -126,9 +126,9 @@ func makeGeneriques(wg *sync.WaitGroup) ([]entities.Generique, error) {
 			continue
 		}
 
-		cis, err := strconv.Atoi(fields[2])
+		cis, convErr := strconv.Atoi(fields[2])
 		if err != nil {
-			return nil, fmt.Errorf("error converting cis in Generiques file on line %d: %w", lineCount, err)
+			return nil, fmt.Errorf("error converting cis in Generiques file on line %d: %w", lineCount, convErr)
 		}
 
 		group, err := strconv.Atoi(fields[0])
