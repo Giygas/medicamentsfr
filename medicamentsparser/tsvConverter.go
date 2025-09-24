@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math"
 	"os"
 	"strconv"
@@ -13,14 +14,14 @@ import (
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 )
 
-func makePresentations(wg *sync.WaitGroup) ([]entities.Presentation, error) {
+func makePresentations(wg *sync.WaitGroup) []entities.Presentation {
 	if wg != nil {
 		defer wg.Done()
 	}
 
 	tsvFile, err := os.Open("files/Presentations.txt")
 	if err != nil {
-		return nil, fmt.Errorf("error opening Presentations.txt: %w", err)
+		fmt.Errorf("error opening Presentations.txt: %w", err)
 	}
 	defer tsvFile.Close()
 
@@ -34,17 +35,17 @@ func makePresentations(wg *sync.WaitGroup) ([]entities.Presentation, error) {
 
 		cis, err := strconv.Atoi(fields[0])
 		if err != nil {
-			return nil, fmt.Errorf("error converting cis in Presentations file: %w", err)
+			fmt.Errorf("error converting cis in Presentations file: %w", err)
 		}
 
 		cip7, err := strconv.Atoi(fields[1])
 		if err != nil {
-			return nil, fmt.Errorf("error converting cip7 in Presentations file: %w", err)
+			fmt.Errorf("error converting cip7 in Presentations file: %w", err)
 		}
 
 		cip13, err := strconv.Atoi(fields[6])
 		if err != nil {
-			return nil, fmt.Errorf("error converting cip13 in Presentations file: %w", err)
+			fmt.Errorf("error converting cip13 in Presentations file: %w", err)
 		}
 
 		// Because the downloaded database has commas as thousands and decimal separators,
@@ -66,7 +67,7 @@ func makePresentations(wg *sync.WaitGroup) ([]entities.Presentation, error) {
 			p, err := strconv.ParseFloat(strings.Replace(fields[9], ",", ".", -1), 32)
 
 			if err != nil {
-				return nil, fmt.Errorf("error parsing price in Presentations file: %w", err)
+				fmt.Errorf("error parsing price in Presentations file: %w", err)
 			}
 			p = math.Trunc(p*100) / 100
 
@@ -92,10 +93,10 @@ func makePresentations(wg *sync.WaitGroup) ([]entities.Presentation, error) {
 	}
 
 	fmt.Println("Presentations done")
-	return jsonRecords, nil
+	return jsonRecords
 }
 
-func makeGeneriques(wg *sync.WaitGroup) ([]entities.Generique, error) {
+func makeGeneriques(wg *sync.WaitGroup) []entities.Generique {
 	if wg != nil {
 		defer wg.Done()
 	} else {
@@ -104,7 +105,7 @@ func makeGeneriques(wg *sync.WaitGroup) ([]entities.Generique, error) {
 
 	tsvFile, err := os.Open("files/Generiques.txt")
 	if err != nil {
-		return nil, fmt.Errorf("error opening Generiques.txt: %w", err)
+		fmt.Errorf("error opening Generiques.txt: %w", err)
 	}
 	defer tsvFile.Close()
 
@@ -122,28 +123,18 @@ func makeGeneriques(wg *sync.WaitGroup) ([]entities.Generique, error) {
 		line := scanner.Text()
 		fields := strings.Split(line, "\t")
 
-<<<<<<< HEAD
 		if len(fields) < 4 {
 			continue
 		}
-=======
-		cis, cisError := strconv.Atoi(fields[2])
-		if err != nil {
-			log.Fatalf("Error converting to int cis in %s, Generiques file ERROR: %s", fields[2], cisError)
->>>>>>> working-one
 
-		cis, convErr := strconv.Atoi(fields[2])
-		if err != nil {
-			return nil, fmt.Errorf("error converting cis in Generiques file on line %d: %w", lineCount, convErr)
+		cis, cisError := strconv.Atoi(fields[2])
+		if cisError != nil {
+			log.Fatalf("Error converting to int cis in %s, Generiques file ERROR: %s", fields[2], cisError)
 		}
 
 		group, groupErr := strconv.Atoi(fields[0])
-		if err != nil {
-<<<<<<< HEAD
-			return nil, fmt.Errorf("error converting group in Generiques file on line %d: %w", lineCount, err)
-=======
+		if groupErr != nil {
 			log.Fatalf("Error converting to int group in %s, Generiques file ERROR: %s", fields[0], groupErr)
->>>>>>> working-one
 		}
 
 		var generiqueType string
@@ -176,24 +167,24 @@ func makeGeneriques(wg *sync.WaitGroup) ([]entities.Generique, error) {
 
 	jsonGeneriques, err := json.MarshalIndent(generiquesList, "", "  ")
 	if err != nil {
-		return nil, fmt.Errorf("error marshalling generiques: %w", err)
+		fmt.Errorf("error marshalling generiques: %w", err)
 	}
 	if wg != nil {
 		fmt.Println("Generiques done")
 		_ = os.WriteFile("src/Generiques.json", jsonGeneriques, 0644)
 	}
 
-	return jsonRecords, nil
+	return jsonRecords
 }
 
-func makeCompositions(wg *sync.WaitGroup) ([]entities.Composition, error) {
+func makeCompositions(wg *sync.WaitGroup) []entities.Composition {
 	if wg != nil {
 		defer wg.Done()
 	}
 
 	tsvFile, err := os.Open("files/Compositions.txt")
 	if err != nil {
-		return nil, fmt.Errorf("error opening Compositions.txt: %w", err)
+		fmt.Errorf("error opening Compositions.txt: %w", err)
 	}
 	defer tsvFile.Close()
 
@@ -207,12 +198,12 @@ func makeCompositions(wg *sync.WaitGroup) ([]entities.Composition, error) {
 
 		cis, err := strconv.Atoi(fields[0])
 		if err != nil {
-			return nil, fmt.Errorf("error converting cis in Compositions file: %w", err)
+			fmt.Errorf("error converting cis in Compositions file: %w", err)
 		}
 
 		codeS, err := strconv.Atoi(fields[2])
 		if err != nil {
-			return nil, fmt.Errorf("error converting codeSubstance in Compositions file: %w", err)
+			fmt.Errorf("error converting codeSubstance in Compositions file: %w", err)
 		}
 
 		record := entities.Composition{
@@ -229,17 +220,17 @@ func makeCompositions(wg *sync.WaitGroup) ([]entities.Composition, error) {
 	}
 
 	fmt.Println("Compositions done")
-	return jsonRecords, nil
+	return jsonRecords
 }
 
-func makeSpecialites(wg *sync.WaitGroup) ([]entities.Specialite, error) {
+func makeSpecialites(wg *sync.WaitGroup) []entities.Specialite {
 	if wg != nil {
 		defer wg.Done()
 	}
 
 	tsvFile, err := os.Open("files/Specialites.txt")
 	if err != nil {
-		return nil, fmt.Errorf("error opening Specialites.txt: %w", err)
+		fmt.Errorf("error opening Specialites.txt: %w", err)
 	}
 	defer tsvFile.Close()
 
@@ -253,7 +244,7 @@ func makeSpecialites(wg *sync.WaitGroup) ([]entities.Specialite, error) {
 
 		cis, err := strconv.Atoi(fields[0])
 		if err != nil {
-			return nil, fmt.Errorf("error converting cis in Specialites file: %w", err)
+			fmt.Errorf("error converting cis in Specialites file: %w", err)
 		}
 
 		record := entities.Specialite{
@@ -273,17 +264,17 @@ func makeSpecialites(wg *sync.WaitGroup) ([]entities.Specialite, error) {
 	}
 
 	fmt.Println("Specialites done")
-	return jsonRecords, nil
+	return jsonRecords
 }
 
-func makeConditions(wg *sync.WaitGroup) ([]entities.Condition, error) {
+func makeConditions(wg *sync.WaitGroup) []entities.Condition {
 	if wg != nil {
 		defer wg.Done()
 	}
 
 	tsvFile, err := os.Open("files/Conditions.txt")
 	if err != nil {
-		return nil, fmt.Errorf("error opening Conditions.txt: %w", err)
+		fmt.Errorf("error opening Conditions.txt: %w", err)
 	}
 	defer tsvFile.Close()
 
@@ -302,7 +293,7 @@ func makeConditions(wg *sync.WaitGroup) ([]entities.Condition, error) {
 
 		cis, err := strconv.Atoi(fields[0])
 		if err != nil {
-			return nil, fmt.Errorf("error converting cis in Conditions file: %w", err)
+			fmt.Errorf("error converting cis in Conditions file: %w", err)
 		}
 
 		record := entities.Condition{
@@ -314,17 +305,17 @@ func makeConditions(wg *sync.WaitGroup) ([]entities.Condition, error) {
 	}
 
 	fmt.Println("Conditions done")
-	return jsonRecords, nil
+	return jsonRecords
 }
 
 // Creates a mapping where the key is the medicament cis and the value is the type of generique of the medicament
 // Returns a map where key:cis and value:typeOfGenerique
-func createMedicamentGeneriqueType() (map[int]string, error) {
+func createMedicamentGeneriqueType() map[int]string {
 	medsType := make(map[int]string)
 
 	tsvFile, err := os.Open("files/Generiques.txt")
 	if err != nil {
-		return nil, fmt.Errorf("error opening Generiques.txt: %w", err)
+		fmt.Errorf("error opening Generiques.txt: %w", err)
 	}
 	defer tsvFile.Close()
 
@@ -336,7 +327,7 @@ func createMedicamentGeneriqueType() (map[int]string, error) {
 
 		cis, err := strconv.Atoi(fields[2])
 		if err != nil {
-			return nil, fmt.Errorf("error converting cis in Generiques file: %w", err)
+			fmt.Errorf("error converting cis in Generiques file: %w", err)
 		}
 
 		var generiqueType string
@@ -355,5 +346,5 @@ func createMedicamentGeneriqueType() (map[int]string, error) {
 		medsType[cis] = generiqueType
 	}
 
-	return medsType, nil
+	return medsType
 }

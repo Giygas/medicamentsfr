@@ -1,13 +1,9 @@
-<<<<<<< HEAD
 // Package medicamentsparser provides functionality for downloading and parsing medicament data from external sources.
-=======
->>>>>>> working-one
 package medicamentsparser
 
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"sync"
 
@@ -15,64 +11,13 @@ import (
 )
 
 func ParseAllMedicaments() []entities.Medicament {
-<<<<<<< HEAD
-	// Download the neccesary files from https://base-donnees-publique.medicaments.gouv.fr/telechargement.php
-	fmt.Println("before downloading and parsing all")
-	if err := downloadAndParseAll(); err != nil {
-		log.Fatalf("Failed to download files: %v", err)
-	}
-
-	fmt.Println("after downloading and parsing all")
-=======
 	// Download the neccesary files from https://base-donnees-publique.medicaments.gouv.fr/telechargement
 	downloadAndParseAll()
->>>>>>> working-one
 
 	//Make all the json files concurrently
 	var wg sync.WaitGroup
 	wg.Add(5)
 
-<<<<<<< HEAD
-	type result struct {
-		data interface{}
-		err  error
-	}
-
-	conditionsChan := make(chan result)
-	presentationsChan := make(chan result)
-	specialitesChan := make(chan result)
-	generiquesChan := make(chan result)
-	compositionsChan := make(chan result)
-
-	go func() {
-		defer wg.Done()
-		data, err := makeConditions(nil)
-		conditionsChan <- result{data, err}
-	}()
-
-	go func() {
-		defer wg.Done()
-		data, err := makePresentations(nil)
-		presentationsChan <- result{data, err}
-	}()
-
-	go func() {
-		defer wg.Done()
-		data, err := makeSpecialites(nil)
-		specialitesChan <- result{data, err}
-	}()
-
-	go func() {
-		defer wg.Done()
-		data, err := makeGeneriques(nil)
-		generiquesChan <- result{data, err}
-	}()
-
-	go func() {
-		defer wg.Done()
-		data, err := makeCompositions(nil)
-		compositionsChan <- result{data, err}
-=======
 	conditionsChan := make(chan []entities.Condition)
 	presentationsChan := make(chan []entities.Presentation)
 	specialitesChan := make(chan []entities.Specialite)
@@ -97,48 +42,15 @@ func ParseAllMedicaments() []entities.Medicament {
 
 	go func() {
 		compositionsChan <- makeCompositions(&wg)
->>>>>>> working-one
 	}()
 
 	wg.Wait()
 
-<<<<<<< HEAD
-	conditionsRes := <-conditionsChan
-	if conditionsRes.err != nil {
-		log.Fatalf("Failed to make conditions: %v", conditionsRes.err)
-	}
-	conditions := conditionsRes.data.([]entities.Condition)
-
-	presentationsRes := <-presentationsChan
-	if presentationsRes.err != nil {
-		log.Fatalf("Failed to make presentations: %v", presentationsRes.err)
-	}
-	presentations := presentationsRes.data.([]entities.Presentation)
-
-	specialitesRes := <-specialitesChan
-	if specialitesRes.err != nil {
-		log.Fatalf("Failed to make specialites: %v", specialitesRes.err)
-	}
-	specialites := specialitesRes.data.([]entities.Specialite)
-
-	generiquesRes := <-generiquesChan
-	if generiquesRes.err != nil {
-		log.Fatalf("Failed to make generiques: %v", generiquesRes.err)
-	}
-	generiques := generiquesRes.data.([]entities.Generique)
-
-	compositionsRes := <-compositionsChan
-	if compositionsRes.err != nil {
-		log.Fatalf("Failed to make compositions: %v", compositionsRes.err)
-	}
-	compositions := compositionsRes.data.([]entities.Composition)
-=======
 	conditions := <-conditionsChan
 	presentations := <-presentationsChan
 	specialites := <-specialitesChan
 	generiques := <-generiquesChan
 	compositions := <-compositionsChan
->>>>>>> working-one
 
 	conditionsChan = nil
 	presentationsChan = nil
@@ -148,18 +60,9 @@ func ParseAllMedicaments() []entities.Medicament {
 
 	var medicamentsSlice []entities.Medicament
 
-<<<<<<< HEAD
 	fmt.Printf("Number of specialites to process: %d\n", len(specialites))
-	os.Stdout.Sync()
-	fmt.Println("before making specialites")
-	os.Stdout.Sync()
 
-	for i, med := range specialites {
-		fmt.Printf("Processing specialite %d/%d (CIS: %d)\n", i+1, len(specialites), med.Cis)
-		os.Stdout.Sync()
-=======
 	for _, med := range specialites {
->>>>>>> working-one
 
 		medicament := new(entities.Medicament)
 
@@ -219,16 +122,10 @@ func ParseAllMedicaments() []entities.Medicament {
 
 		wg.Wait()
 		medicamentsSlice = append(medicamentsSlice, *medicament)
-<<<<<<< HEAD
-		fmt.Printf("Processed specialite %d/%d (CIS: %d)\n", i+1, len(specialites), med.Cis)
-		os.Stdout.Sync()
 
 	}
-	fmt.Println("All medicaments parsed successfully")
-	os.Stdout.Sync()
 
-	fmt.Println("All medicaments processed, creating JSON file")
-	os.Stdout.Sync()
+	fmt.Println("All medicaments parsed successfully")
 	jsonMedicament, err := json.MarshalIndent(medicamentsSlice, "", "  ")
 	if err != nil {
 		fmt.Printf("error marshalling medicaments: %v\n", err)
@@ -242,18 +139,6 @@ func ParseAllMedicaments() []entities.Medicament {
 	}
 	fmt.Println("Medicaments.json created")
 	os.Stdout.Sync()
-=======
-
-	}
-
-	jsonMedicament, err := json.MarshalIndent(medicamentsSlice, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-
-	_ = os.WriteFile("src/Medicaments.json", jsonMedicament, 0644)
-	log.Println("Medicaments.json created")
->>>>>>> working-one
 
 	conditions = nil
 	presentations = nil
