@@ -69,26 +69,66 @@ func scheduleMedicaments() {
 	}()
 }
 
-// Thread-safe getters
+// Thread-safe getters with type check
 
 func GetMedicaments() []entities.Medicament {
-	return dataContainer.medicaments.Load().([]entities.Medicament)
+	if v := dataContainer.medicaments.Load(); v != nil {
+		if medicaments, ok := v.([]entities.Medicament); ok {
+			return medicaments
+		}
+	}
+
+	log.Printf("Warning: Medicaments list is empty or invalid")
+
+	return []entities.Medicament{}
 }
 
 func GetGeneriques() []entities.GeneriqueList {
-	return dataContainer.generiques.Load().([]entities.GeneriqueList)
+	if v := dataContainer.generiques.Load(); v != nil {
+		if generiques, ok := v.([]entities.GeneriqueList); ok {
+			return generiques
+		}
+	}
+
+	log.Printf("Warning: GeneriqueList is empty or invalid")
+
+	return []entities.GeneriqueList{}
 }
 
 func GetMedicamentsMap() map[int]entities.Medicament {
-	return dataContainer.medicamentsMap.Load().(map[int]entities.Medicament)
+	if v := dataContainer.medicamentsMap.Load(); v != nil {
+		if medicamentsMap, ok := v.(map[int]entities.Medicament); ok {
+			return medicamentsMap
+		}
+	}
+
+	log.Printf("Warning: MedicamentsMap is empty or invalid")
+
+	return make(map[int]entities.Medicament)
 }
 
 func GetGeneriquesMap() map[int]entities.Generique {
-	return dataContainer.generiquesMap.Load().(map[int]entities.Generique)
-}
+	if v := dataContainer.generiquesMap.Load(); v != nil {
+		if generiquesMap, ok := v.(map[int]entities.Generique); ok {
+			return generiquesMap
+		}
+	}
 
+	log.Printf("Warning: GeneriquesMap is empty or invalid")
+
+	return make(map[int]entities.Generique)
+
+}
 func GetLastUpdated() time.Time {
-	return dataContainer.lastUpdated.Load().(time.Time)
+	if v := dataContainer.lastUpdated.Load(); v != nil {
+		if lastUpdated, ok := v.(time.Time); ok {
+			return lastUpdated
+		}
+	}
+
+	log.Printf("Warning: could not get the last updated value")
+
+	return time.Time{}
 }
 
 func IsUpdating() bool {
