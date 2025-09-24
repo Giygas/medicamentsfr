@@ -11,7 +11,7 @@ import (
 )
 
 func ParseAllMedicaments() []entities.Medicament {
-	// Download the neccesary files from https://base-donnees-publique.medicaments.gouv.fr/telechargement.php
+	// Download the neccesary files from https://base-donnees-publique.medicaments.gouv.fr/telechargement
 	downloadAndParseAll()
 
 	//Make all the json files concurrently
