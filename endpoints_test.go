@@ -100,9 +100,9 @@ func TestEndpoints(t *testing.T) {
 	router.Get("/database/{pageNumber}", servePagedMedicaments)
 	router.Get("/database", serveAllMedicaments)
 	router.Get("/medicament/{element}", findMedicament)
-	router.Get("/medicament/id/{cis}", findMedicamentById)
+	router.Get("/medicament/id/{cis}", findMedicamentByID)
 	router.Get("/generiques/{libelle}", findGeneriques)
-	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupId)
+	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupID)
 	router.Get("/health", healthCheck)
 
 	for _, tt := range testCases {

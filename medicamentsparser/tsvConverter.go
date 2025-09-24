@@ -116,18 +116,24 @@ func makeGeneriques(wg *sync.WaitGroup) ([]entities.Generique, error) {
 	// Use a map for creating the generiques list
 	generiquesList := make(map[int][]int)
 
+	lineCount := 0
 	for scanner.Scan() {
+		lineCount++
 		line := scanner.Text()
 		fields := strings.Split(line, "\t")
 
+		if len(fields) < 4 {
+			continue
+		}
+
 		cis, err := strconv.Atoi(fields[2])
 		if err != nil {
-			return nil, fmt.Errorf("error converting cis in Generiques file: %w", err)
+			return nil, fmt.Errorf("error converting cis in Generiques file on line %d: %w", lineCount, err)
 		}
 
 		group, err := strconv.Atoi(fields[0])
 		if err != nil {
-			return nil, fmt.Errorf("error converting group in Generiques file: %w", err)
+			return nil, fmt.Errorf("error converting group in Generiques file on line %d: %w", lineCount, err)
 		}
 
 		var generiqueType string
@@ -165,7 +171,6 @@ func makeGeneriques(wg *sync.WaitGroup) ([]entities.Generique, error) {
 	if wg != nil {
 		fmt.Println("Generiques done")
 		_ = os.WriteFile("src/Generiques.json", jsonGeneriques, 0644)
-		fmt.Println("Generiques.json created (List of generiques)")
 	}
 
 	return jsonRecords, nil

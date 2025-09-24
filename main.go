@@ -70,6 +70,7 @@ func scheduleMedicaments() {
 }
 
 // Thread-safe getters
+
 func GetMedicaments() []entities.Medicament {
 	return dataContainer.medicaments.Load().([]entities.Medicament)
 }
@@ -200,9 +201,9 @@ func main() {
 	router.Get("/database/{pageNumber}", servePagedMedicaments)
 	router.Get("/database", serveAllMedicaments)
 	router.Get("/medicament/{element}", findMedicament)
-	router.Get("/medicament/id/{cis}", findMedicamentById)
+	router.Get("/medicament/id/{cis}", findMedicamentByID)
 	router.Get("/generiques/{libelle}", findGeneriques)
-	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupId)
+	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupID)
 	router.Get("/health", healthCheck)
 
 	// Serve documentation with caching
