@@ -142,7 +142,7 @@ func findMedicament(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func findMedicamentById(w http.ResponseWriter, r *http.Request) {
+func findMedicamentByID(w http.ResponseWriter, r *http.Request) {
 	cis, err := strconv.Atoi(chi.URLParam(r, "cis"))
 	if err != nil {
 		respondWithError(w, 400, "Invalid CIS number")
@@ -197,15 +197,15 @@ func findGeneriques(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func findGeneriquesByGroupId(w http.ResponseWriter, r *http.Request) {
-	groupId, err := strconv.Atoi(chi.URLParam(r, "groupId"))
+func findGeneriquesByGroupID(w http.ResponseWriter, r *http.Request) {
+	groupID, err := strconv.Atoi(chi.URLParam(r, "groupId"))
 	if err != nil {
 		respondWithError(w, 400, "Invalid group ID")
 		return
 	}
 
 	generiquesMap := GetGeneriquesMap()
-	generique, exists := generiquesMap[groupId]
+	generique, exists := generiquesMap[groupID]
 	if !exists {
 		respondWithError(w, 404, "Generique group not found")
 		return

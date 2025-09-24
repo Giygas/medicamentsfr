@@ -10,6 +10,7 @@ import (
 )
 
 // Per-client rate limiting
+
 type RateLimiter struct {
 	clients map[string]*ratelimit.Bucket
 	mu      sync.RWMutex
