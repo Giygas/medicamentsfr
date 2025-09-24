@@ -132,8 +132,8 @@ func createGeneriquesTestFiles(t *testing.T) {
 	os.WriteFile("files/Generiques.txt", []byte(generiquesTxt), 0644)
 
 	// Create Generiques.json
-	generiquesJson := `{"100":[1]}`
-	os.WriteFile("src/Generiques.json", []byte(generiquesJson), 0644)
+	generiquesJSON := `{"100":[1]}`
+	os.WriteFile("src/Generiques.json", []byte(generiquesJSON), 0644)
 }
 
 func cleanupTestFiles(t *testing.T) {

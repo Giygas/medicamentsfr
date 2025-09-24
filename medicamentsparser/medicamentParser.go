@@ -1,3 +1,4 @@
+// Package medicamentsparser provides functionality for downloading and parsing medicament data from external sources.
 package medicamentsparser
 
 import (

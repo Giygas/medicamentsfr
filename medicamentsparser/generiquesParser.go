@@ -2,6 +2,7 @@ package medicamentsparser
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -9,10 +10,12 @@ import (
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 )
 
-var generiquesList []entities.GeneriqueList
 var medsType map[int]string
 
 func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities.Medicament) ([]entities.GeneriqueList, map[int]entities.Generique) {
+	var err error
+
+	fmt.Println("trying to parse generiques")
 	// allGeneriques: []Generique
 	allGeneriques, err := makeGeneriques(nil)
 	if err != nil {
@@ -42,9 +45,10 @@ func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities
 	for i, v := range generiquesFile {
 
 		// Convert the string index to integer
-		groupInt, err := strconv.Atoi(i)
+		groupInt, convErr := strconv.Atoi(i)
 		if err != nil {
-			log.Println("An error ocurred converting the generiques group to integer", err)
+			log.Println("An error ocurred converting the generiques group to integer", convErr)
+			continue
 		}
 
 		current := entities.GeneriqueList{
@@ -56,12 +60,18 @@ func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities
 		generiques = append(generiques, current)
 	}
 
+	// Write debug file
 	marshalledGeneriques, err := json.MarshalIndent(generiques, "", " ")
 	if err != nil {
-		log.Println("An error has occurred when marshalling generiques", err)
+		log.Printf("Error marshalling generiques: %v", err)
+	} else {
+		if writeErr := os.WriteFile("src/GeneriquesFull.json", marshalledGeneriques, 0644); writeErr != nil {
+			log.Printf("Error writing GeneriquesFull.json: %v", writeErr)
+		} else {
+			log.Println("GeneriquesFull.json created")
+		}
 	}
-	_ = os.WriteFile("src/GeneriquesFull.json", marshalledGeneriques, 0644)
-	log.Println("GeneriquesFull.json created")
+
 	return generiques, generiquesMap
 }
 
@@ -85,9 +95,9 @@ func getMedicamentsInArray(medicamentsIds []int, medicamentMap *map[int]entities
 		if medicament, ok := (*medicamentMap)[v]; ok {
 			generiqueComposition := createGeneriqueComposition(&medicament.Composition)
 			generiqueMed := entities.GeneriqueMedicament{
-				Cis:                 (medicament.Cis),
-				Denomination:        (medicament.Denomination),
-				FormePharmaceutique: (medicament.FormePharmaceutique),
+				Cis:                 medicament.Cis,
+				Denomination:        medicament.Denomination,
+				FormePharmaceutique: medicament.FormePharmaceutique,
 				Type:                medsType[medicament.Cis],
 				Composition:         generiqueComposition,
 			}
