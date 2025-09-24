@@ -72,6 +72,7 @@ func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities
 		}
 	}
 
+	log.Println("Generiques parsing completed")
 	return generiques, generiquesMap
 }
 

@@ -106,8 +106,12 @@ func updateData() error {
 	fmt.Println("Starting database update at:", time.Now())
 	start := time.Now()
 
+	log.Print("before medicaments parser")
+	os.Stdout.Sync()
 	// Parse data into temporary variables (not affecting current data)
 	newMedicaments := medicamentsparser.ParseAllMedicaments()
+	log.Print("after medicaments parser")
+	os.Stdout.Sync()
 
 	// Create new maps
 	newMedicamentsMap := make(map[int]entities.Medicament)
@@ -125,8 +129,8 @@ func updateData() error {
 	dataContainer.lastUpdated.Store(time.Now())
 
 	elapsed := time.Since(start)
-	fmt.Printf("Database update completed in %s. Loaded %d medicaments\n",
-		elapsed, len(newMedicaments))
+	log.Printf("Database update completed in %s. Loaded %d medicaments", elapsed, len(newMedicaments))
+	os.Stdout.Sync()
 
 	return nil
 }
