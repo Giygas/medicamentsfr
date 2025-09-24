@@ -1,3 +1,4 @@
+// Package medicamentsparser provides functionality for downloading and parsing medicament data from external sources.
 package medicamentsparser
 
 import (
@@ -16,13 +17,13 @@ func downloadAndParseFile(filepath string, url string) error {
 	filepath = "files/" + filepath + ".txt"
 	response, err := http.Get(url)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to download %s: %w", url, err)
 	}
 	defer response.Body.Close()
 
 	outFile, err := os.Create(filepath)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to create file %s: %w", filepath, err)
 	}
 
 	defer outFile.Close()
@@ -32,7 +33,7 @@ func downloadAndParseFile(filepath string, url string) error {
 	for scanner.Scan() {
 		_, err = fmt.Fprintln(outFile, scanner.Text())
 		if err != nil {
-			panic(err)
+			return fmt.Errorf("failed to write to file %s: %w", filepath, err)
 		}
 	}
 	fmt.Println("Downloaded: " + filepath)
@@ -55,26 +56,36 @@ func downloadAndParseAll() error {
 	filePath := filepath.Join(".", "files")
 	err := os.MkdirAll(filePath, os.ModePerm)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to create files directory: %w", err)
 	}
 	filePath = filepath.Join(".", "src")
 	err = os.MkdirAll(filePath, os.ModePerm)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("failed to create src directory: %w", err)
 	}
 
 	var wg sync.WaitGroup
+	var mu sync.Mutex
+	var errors []error
 
 	for fileName, url := range files {
 		wg.Add(1)
 
 		go func(file string, url string) {
 			defer wg.Done()
-			downloadAndParseFile(file, url)
+			if err := downloadAndParseFile(file, url); err != nil {
+				mu.Lock()
+				errors = append(errors, err)
+				mu.Unlock()
+			}
 		}(fileName, url)
 
 	}
 	wg.Wait()
+
+	if len(errors) > 0 {
+		return fmt.Errorf("download errors: %v", errors)
+	}
 
 	return nil
 }
