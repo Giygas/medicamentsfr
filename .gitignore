@@ -1,7 +1,11 @@
 **/files/*.txt
 */files/*.txt
+files/
+src/
 **src/*.json
 src/*
 .env
 .DS_Store
 medicamentsfr
+medicamentsparser/files
+medicamentsparser/src
