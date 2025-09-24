@@ -2,7 +2,6 @@ package medicamentsparser
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -15,7 +14,6 @@ var medsType map[int]string
 func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities.Medicament) ([]entities.GeneriqueList, map[int]entities.Generique) {
 	var err error
 
-	fmt.Println("trying to parse generiques")
 	// allGeneriques: []Generique
 	allGeneriques := makeGeneriques(nil)
 
