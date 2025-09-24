@@ -98,7 +98,8 @@ func TestFileReadingErrors(t *testing.T) {
 	// So we'll test with valid empty array
 	os.WriteFile("src/Specialites.json", []byte("[]"), 0644)
 
-	specialites := specialitesFileToJSON()
+	//TODO: handle the error here ( _ is error )
+	specialites, _ := specialitesFileToJSON()
 	if len(specialites) != 0 {
 		t.Errorf("Expected empty slice for empty array, got %d items", len(specialites))
 	}
@@ -129,8 +130,8 @@ func createGeneriquesTestFiles(t *testing.T) {
 	os.WriteFile("files/Generiques.txt", []byte(generiquesTxt), 0644)
 
 	// Create Generiques.json
-	generiquesJson := `{"100":[1]}`
-	os.WriteFile("src/Generiques.json", []byte(generiquesJson), 0644)
+	generiquesJSON := `{"100":[1]}`
+	os.WriteFile("src/Generiques.json", []byte(generiquesJSON), 0644)
 }
 
 func cleanupTestFiles(t *testing.T) {
