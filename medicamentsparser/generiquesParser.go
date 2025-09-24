@@ -14,7 +14,10 @@ var medsType map[int]string
 
 func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities.Medicament) ([]entities.GeneriqueList, map[int]entities.Generique) {
 	// allGeneriques: []Generique
-	allGeneriques := makeGeneriques(nil)
+	allGeneriques, err := makeGeneriques(nil)
+	if err != nil {
+		log.Fatalf("Failed to make generiques: %v", err)
+	}
 	// Create a map of all the generiques to reduce algorithm complexity
 	generiquesMap := make(map[int]entities.Generique)
 	for i := range allGeneriques {
@@ -22,11 +25,17 @@ func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities
 	}
 
 	// generiques file: [groupid]:[]cis of medicaments in the same group
-	generiquesFile := generiqueFileToJSON()
+	generiquesFile, err := generiqueFileToJSON()
+	if err != nil {
+		log.Fatalf("Failed to read generiques file: %v", err)
+	}
 
 	// The medsType is a map where the key are the medicament cis and the value is the
 	// type of generique
-	medsType = createMedicamentGeneriqueType()
+	medsType, err = createMedicamentGeneriqueType()
+	if err != nil {
+		log.Fatalf("Failed to create medicament generique type: %v", err)
+	}
 
 	var generiques []entities.GeneriqueList
 

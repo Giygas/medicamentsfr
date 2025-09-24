@@ -98,7 +98,10 @@ func TestFileReadingErrors(t *testing.T) {
 	// So we'll test with valid empty array
 	os.WriteFile("src/Specialites.json", []byte("[]"), 0644)
 
-	specialites := specialitesFileToJSON()
+	specialites, err := specialitesFileToJSON()
+	if err != nil {
+		t.Fatalf("Failed to read specialites file: %v", err)
+	}
 	if len(specialites) != 0 {
 		t.Errorf("Expected empty slice for empty array, got %d items", len(specialites))
 	}

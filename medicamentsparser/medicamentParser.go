@@ -12,45 +12,86 @@ import (
 
 func ParseAllMedicaments() []entities.Medicament {
 	// Download the neccesary files from https://base-donnees-publique.medicaments.gouv.fr/telechargement.php
-	downloadAndParseAll()
+	if err := downloadAndParseAll(); err != nil {
+		log.Fatalf("Failed to download files: %v", err)
+	}
 
 	//Make all the json files concurrently
 	var wg sync.WaitGroup
 	wg.Add(5)
 
-	conditionsChan := make(chan []entities.Condition)
-	presentationsChan := make(chan []entities.Presentation)
-	specialitesChan := make(chan []entities.Specialite)
-	generiquesChan := make(chan []entities.Generique)
-	compositionsChan := make(chan []entities.Composition)
+	type result struct {
+		data interface{}
+		err  error
+	}
+
+	conditionsChan := make(chan result)
+	presentationsChan := make(chan result)
+	specialitesChan := make(chan result)
+	generiquesChan := make(chan result)
+	compositionsChan := make(chan result)
 
 	go func() {
-		conditionsChan <- makeConditions(&wg)
+		defer wg.Done()
+		data, err := makeConditions(nil)
+		conditionsChan <- result{data, err}
 	}()
 
 	go func() {
-		presentationsChan <- makePresentations(&wg)
+		defer wg.Done()
+		data, err := makePresentations(nil)
+		presentationsChan <- result{data, err}
 	}()
 
 	go func() {
-		specialitesChan <- makeSpecialites(&wg)
+		defer wg.Done()
+		data, err := makeSpecialites(nil)
+		specialitesChan <- result{data, err}
 	}()
 
 	go func() {
-		generiquesChan <- makeGeneriques(&wg)
+		defer wg.Done()
+		data, err := makeGeneriques(nil)
+		generiquesChan <- result{data, err}
 	}()
 
 	go func() {
-		compositionsChan <- makeCompositions(&wg)
+		defer wg.Done()
+		data, err := makeCompositions(nil)
+		compositionsChan <- result{data, err}
 	}()
 
 	wg.Wait()
 
-	conditions := <-conditionsChan
-	presentations := <-presentationsChan
-	specialites := <-specialitesChan
-	generiques := <-generiquesChan
-	compositions := <-compositionsChan
+	conditionsRes := <-conditionsChan
+	if conditionsRes.err != nil {
+		log.Fatalf("Failed to make conditions: %v", conditionsRes.err)
+	}
+	conditions := conditionsRes.data.([]entities.Condition)
+
+	presentationsRes := <-presentationsChan
+	if presentationsRes.err != nil {
+		log.Fatalf("Failed to make presentations: %v", presentationsRes.err)
+	}
+	presentations := presentationsRes.data.([]entities.Presentation)
+
+	specialitesRes := <-specialitesChan
+	if specialitesRes.err != nil {
+		log.Fatalf("Failed to make specialites: %v", specialitesRes.err)
+	}
+	specialites := specialitesRes.data.([]entities.Specialite)
+
+	generiquesRes := <-generiquesChan
+	if generiquesRes.err != nil {
+		log.Fatalf("Failed to make generiques: %v", generiquesRes.err)
+	}
+	generiques := generiquesRes.data.([]entities.Generique)
+
+	compositionsRes := <-compositionsChan
+	if compositionsRes.err != nil {
+		log.Fatalf("Failed to make compositions: %v", compositionsRes.err)
+	}
+	compositions := compositionsRes.data.([]entities.Composition)
 
 	conditionsChan = nil
 	presentationsChan = nil
