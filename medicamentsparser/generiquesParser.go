@@ -9,7 +9,6 @@ import (
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 )
 
-var generiquesList []entities.GeneriqueList
 var medsType map[int]string
 
 func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities.Medicament) ([]entities.GeneriqueList, map[int]entities.Generique) {
@@ -22,7 +21,8 @@ func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities
 	}
 
 	// generiques file: [groupid]:[]cis of medicaments in the same group
-	generiquesFile := generiqueFileToJSON()
+	generiquesFile, err := generiqueFileToJSON()
+	//TODO: handle the error here
 
 	// The medsType is a map where the key are the medicament cis and the value is the
 	// type of generique
@@ -33,9 +33,9 @@ func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities
 	for i, v := range generiquesFile {
 
 		// Convert the string index to integer
-		groupInt, err := strconv.Atoi(i)
+		groupInt, convErr := strconv.Atoi(i)
 		if err != nil {
-			log.Println("An error ocurred converting the generiques group to integer", err)
+			log.Println("An error ocurred converting the generiques group to integer", convErr)
 		}
 
 		current := entities.GeneriqueList{
