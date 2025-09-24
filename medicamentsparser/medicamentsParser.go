@@ -13,9 +13,12 @@ import (
 
 func ParseAllMedicaments() []entities.Medicament {
 	// Download the neccesary files from https://base-donnees-publique.medicaments.gouv.fr/telechargement.php
+	fmt.Println("before downloading and parsing all")
 	if err := downloadAndParseAll(); err != nil {
 		log.Fatalf("Failed to download files: %v", err)
 	}
+
+	fmt.Println("after downloading and parsing all")
 
 	//Make all the json files concurrently
 	var wg sync.WaitGroup
@@ -102,7 +105,14 @@ func ParseAllMedicaments() []entities.Medicament {
 
 	var medicamentsSlice []entities.Medicament
 
-	for _, med := range specialites {
+	fmt.Printf("Number of specialites to process: %d\n", len(specialites))
+	os.Stdout.Sync()
+	fmt.Println("before making specialites")
+	os.Stdout.Sync()
+
+	for i, med := range specialites {
+		fmt.Printf("Processing specialite %d/%d (CIS: %d)\n", i+1, len(specialites), med.Cis)
+		os.Stdout.Sync()
 
 		medicament := new(entities.Medicament)
 
@@ -162,16 +172,28 @@ func ParseAllMedicaments() []entities.Medicament {
 
 		wg.Wait()
 		medicamentsSlice = append(medicamentsSlice, *medicament)
+		fmt.Printf("Processed specialite %d/%d (CIS: %d)\n", i+1, len(specialites), med.Cis)
+		os.Stdout.Sync()
 
 	}
+	fmt.Println("All medicaments parsed successfully")
+	os.Stdout.Sync()
 
+	fmt.Println("All medicaments processed, creating JSON file")
+	os.Stdout.Sync()
 	jsonMedicament, err := json.MarshalIndent(medicamentsSlice, "", "  ")
 	if err != nil {
-		fmt.Println("error:", err)
+		fmt.Printf("error marshalling medicaments: %v\n", err)
+		return nil
 	}
 
-	_ = os.WriteFile("src/Medicaments.json", jsonMedicament, 0644)
-	log.Println("Medicaments.json created")
+	err = os.WriteFile("src/Medicaments.json", jsonMedicament, 0644)
+	if err != nil {
+		fmt.Printf("error writing Medicaments.json: %v\n", err)
+		return nil
+	}
+	fmt.Println("Medicaments.json created")
+	os.Stdout.Sync()
 
 	conditions = nil
 	presentations = nil
