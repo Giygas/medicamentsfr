@@ -20,11 +20,22 @@
 
 ## Application Context
 
-- **Overview**: This is a JSON API for retrieving medicaments data from parsed external sources. It provides endpoints for searching, listing, and fetching medicaments and generics.
-- **HTML Usage**: HTML files (e.g., `html/index.html`) are used only for static documentation and are served with caching headers. No user inputs are processed or rendered in HTML, reducing XSS risks.
+- **Overview**: This is a JSON API for retrieving medicaments data from parsed
+  external sources. It provides endpoints for searching, listing, and fetching
+  medicaments and generics.
+- **Parsing External Source**: All the files inside medicamentsparser are used
+  once when the server updates, as defined by the cron job. The full resulting
+  object with all the data is less than 20MB so the concurrency and connections
+  for the external sources parser are not really a high impact concern
+- **HTML Usage**: HTML files (e.g., `html/index.html`) are used only for static
+  documentation and are served with caching headers. No user inputs are
+  processed or rendered in HTML, reducing XSS risks.
 - **Server Config**: The current server config in in server_config.txt
-- **Input Sanitization**: User inputs (e.g., search terms) are validated for length and content (alphanumeric + spaces), and sanitized for regex use with `regexp.QuoteMeta`. JSON marshaling handles escaping automatically for API responses.
-- **Security Notes**: Focus on API security; no database interactions, so SQL injection is not a concern. Rate limiting and middleware protect against abuse.
+- **Input Sanitization**: User inputs (e.g., search terms) are validated for
+  length and content (alphanumeric + spaces), and sanitized for regex use with
+  `regexp.QuoteMeta`. JSON marshaling handles escaping automatically for API responses.
+- **Security Notes**: Focus on API security; no database interactions, so SQL
+  injection is not a concern. Rate limiting and middleware protect against abuse.
 
 ## Code Style Guidelines
 
@@ -36,6 +47,9 @@
 - **Concurrency**: Use goroutines and channels for parallel processing.
 - **Comments**: Add comments for exported functions and complex logic.
 
-## Dependency Injection
+## Recommendations
 
-- **Status**: Not currently implemented; planned for future to improve testability and reduce coupling in handlers.
+- **Dependency Injection**: Not currently implemented; planned for future to
+  improve testability and reduce coupling in handlers.
+- **Worker Pool**: Not currently implemented; For a 20MB dataset with 5 files
+  and 5 workers, the performance impact of not using a worker pool is likely minimal
