@@ -10,7 +10,7 @@
 - Run all tests: `go test -v`
 - Run a single test: `go test -run TestName`
 - Run tests with coverage: `go test -coverprofile=coverage.out && go tool cover
-   -html=coverage.out -o coverage.html`
+-html=coverage.out -o coverage.html`
 
 ## Lint Commands
 
@@ -22,6 +22,7 @@
 
 - **Overview**: This is a JSON API for retrieving medicaments data from parsed external sources. It provides endpoints for searching, listing, and fetching medicaments and generics.
 - **HTML Usage**: HTML files (e.g., `html/index.html`) are used only for static documentation and are served with caching headers. No user inputs are processed or rendered in HTML, reducing XSS risks.
+- **Server Config**: The current server config in in server_config.txt
 - **Input Sanitization**: User inputs (e.g., search terms) are validated for length and content (alphanumeric + spaces), and sanitized for regex use with `regexp.QuoteMeta`. JSON marshaling handles escaping automatically for API responses.
 - **Security Notes**: Focus on API security; no database interactions, so SQL injection is not a concern. Rate limiting and middleware protect against abuse.
 
@@ -34,3 +35,7 @@
 - **Error Handling**: Use `log.Fatal` for critical errors; `log.Printf` for warnings.
 - **Concurrency**: Use goroutines and channels for parallel processing.
 - **Comments**: Add comments for exported functions and complex logic.
+
+## Dependency Injection
+
+- **Status**: Not currently implemented; planned for future to improve testability and reduce coupling in handlers.
