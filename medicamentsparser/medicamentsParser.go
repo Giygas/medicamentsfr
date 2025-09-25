@@ -80,50 +80,33 @@ func ParseAllMedicaments() []entities.Medicament {
 		medicament.Titulaire = med.Titulaire
 		medicament.SurveillanceRenforcee = med.SurveillanceRenforcee
 
-		var wg sync.WaitGroup
-
-		wg.Add(4)
 		// Get all the compositions of this medicament
-		go func(id int) {
-			defer wg.Done()
-			for _, v := range compositions {
-				if id == v.Cis {
-					medicament.Composition = append(medicament.Composition, v)
-				}
+		for _, v := range compositions {
+			if med.Cis == v.Cis {
+				medicament.Composition = append(medicament.Composition, v)
 			}
-		}(med.Cis)
+		}
 
 		// Get all the generiques of this medicament
-		go func(id int) {
-			defer wg.Done()
-			for _, v := range generiques {
-				if id == v.Cis {
-					medicament.Generiques = append(medicament.Generiques, v)
-				}
+		for _, v := range generiques {
+			if med.Cis == v.Cis {
+				medicament.Generiques = append(medicament.Generiques, v)
 			}
-		}(med.Cis)
+		}
 
 		// Get all the presentations of this medicament
-		go func(id int) {
-			defer wg.Done()
-			for _, v := range presentations {
-				if id == v.Cis {
-					medicament.Presentation = append(medicament.Presentation, v)
-				}
+		for _, v := range presentations {
+			if med.Cis == v.Cis {
+				medicament.Presentation = append(medicament.Presentation, v)
 			}
-		}(med.Cis)
+		}
 
 		// Get the conditions of this medicament
-		go func(id int) {
-			defer wg.Done()
-			for _, v := range conditions {
-				if id == v.Cis {
-					medicament.Conditions = append(medicament.Conditions, v.Condition)
-				}
+		for _, v := range conditions {
+			if med.Cis == v.Cis {
+				medicament.Conditions = append(medicament.Conditions, v.Condition)
 			}
-		}(med.Cis)
-
-		wg.Wait()
+		}
 		medicamentsSlice = append(medicamentsSlice, *medicament)
 
 	}
