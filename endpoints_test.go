@@ -180,3 +180,51 @@ func TestBlockDirectAccessMiddleware(t *testing.T) {
 
 	fmt.Println("blockDirectAccessMiddleware test completed")
 }
+
+func TestRateLimiter(t *testing.T) {
+	fmt.Println("Testing rate limiter...")
+
+	router := chi.NewRouter()
+	router.Use(rateLimitHandler)
+	router.Get("/database", serveAllMedicaments)
+
+	// Simulate requests from the same IP
+	clientIP := "192.168.1.1:12345"
+
+	// Make 5 requests to /database (each costs 200 tokens, total 1000 tokens)
+	for i := 0; i < 5; i++ {
+		req, _ := http.NewRequest("GET", "/database", nil)
+		req.RemoteAddr = clientIP
+		rr := httptest.NewRecorder()
+		router.ServeHTTP(rr, req)
+
+		if rr.Code != http.StatusOK {
+			t.Errorf("Request %d: Expected 200, got %d", i+1, rr.Code)
+		}
+	}
+
+	// 6th request should be rate limited (exceeds 1000 tokens)
+	req, _ := http.NewRequest("GET", "/database", nil)
+	req.RemoteAddr = clientIP
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusTooManyRequests {
+		t.Errorf("6th request: Expected 429, got %d", rr.Code)
+	}
+
+	// Wait for refill (10 tokens/second, need to refill 200 tokens for another request)
+	time.Sleep(21 * time.Second) // 200 / 10 = 20 seconds + buffer
+
+	// Now should allow another request
+	req, _ = http.NewRequest("GET", "/database", nil)
+	req.RemoteAddr = clientIP
+	rr = httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusOK {
+		t.Errorf("After refill: Expected 200, got %d", rr.Code)
+	}
+
+	fmt.Println("Rate limiter test completed")
+}
