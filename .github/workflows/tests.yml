@@ -11,7 +11,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,8 +18,11 @@ jobs:
         uses: actions/setup-go@v5.0.0
         with:
           go-version-file: "go.mod"
-
       - name: Install dependencies
-        run: go install .
-      - name: Run Tests
-        run: go test -v
+        run: go mod download
+
+      - name: Run Parser Tests
+        run: go test ./medicamentsparser -v
+
+      - name: Run Main Tests
+        run: go test . -v
