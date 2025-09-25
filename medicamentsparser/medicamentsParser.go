@@ -10,6 +10,20 @@ import (
 	"github.com/giygas/medicamentsfr/medicamentsparser/entities"
 )
 
+func validateMedicament(m *entities.Medicament) error {
+	if m.Cis <= 0 {
+		return fmt.Errorf("invalid CIS: %d", m.Cis)
+	}
+	if m.Denomination == "" {
+		return fmt.Errorf("missing denomination")
+	}
+	if m.FormePharmaceutique == "" {
+		return fmt.Errorf("missing forme pharmaceutique")
+	}
+	// Add more checks as needed
+	return nil
+}
+
 func ParseAllMedicaments() []entities.Medicament {
 	// Download the neccesary files from https://base-donnees-publique.medicaments.gouv.fr/telechargement
 	downloadAndParseAll()
@@ -107,6 +121,13 @@ func ParseAllMedicaments() []entities.Medicament {
 				medicament.Conditions = append(medicament.Conditions, v.Condition)
 			}
 		}
+
+		// Validate the medicament structure
+		if err := validateMedicament(medicament); err != nil {
+			fmt.Printf("Skipping invalid medicament %d: %v\n", med.Cis, err)
+			continue
+		}
+
 		medicamentsSlice = append(medicamentsSlice, *medicament)
 
 	}
