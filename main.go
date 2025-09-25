@@ -213,6 +213,7 @@ func main() {
 
 	router := chi.NewRouter()
 
+	router.Use(middleware.RedirectSlashes)
 	router.Use(middleware.RequestID)
 	router.Use(realIPMiddleware)
 	router.Use(middleware.Logger)
