@@ -20,6 +20,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-co-op/gocron"
 	"github.com/joho/godotenv"
+	_ "net/http/pprof"
 )
 
 // DataContainer holds all the data with atomic pointers for zero-downtime updates
@@ -246,6 +247,14 @@ func main() {
 	router.Get("/generiques/group/{groupId}", findGeneriquesByGroupID)
 	router.Get("/health", healthCheck)
 
+	// Profiling endpoint (accessible at /debug/pprof/) - only for local dev
+	if adressString == "127.0.0.1" {
+		go func() {
+			log.Println("Profiling server started at http://localhost:6060/debug/pprof/")
+			log.Fatal(http.ListenAndServe("localhost:6060", nil))
+		}()
+	}
+
 	// Serve documentation with caching
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		// Set caching headers for HTML
@@ -307,7 +316,7 @@ func main() {
 
 // Health check endpoint
 func healthCheck(w http.ResponseWriter, r *http.Request) {
-	status := map[string]interface{}{
+	status := map[string]any{
 		"status":           "healthy",
 		"medicament_count": len(GetMedicaments()),
 		"generique_count":  len(GetGeneriques()),
