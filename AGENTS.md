@@ -18,6 +18,13 @@
 - Vet code: `go vet ./...`
 - Check formatting: `gofmt -d .`
 
+## Application Context
+
+- **Overview**: This is a JSON API for retrieving medicaments data from parsed external sources. It provides endpoints for searching, listing, and fetching medicaments and generics.
+- **HTML Usage**: HTML files (e.g., `html/index.html`) are used only for static documentation and are served with caching headers. No user inputs are processed or rendered in HTML, reducing XSS risks.
+- **Input Sanitization**: User inputs (e.g., search terms) are validated for length and content (alphanumeric + spaces), and sanitized for regex use with `regexp.QuoteMeta`. JSON marshaling handles escaping automatically for API responses.
+- **Security Notes**: Focus on API security; no database interactions, so SQL injection is not a concern. Rate limiting and middleware protect against abuse.
+
 ## Code Style Guidelines
 
 - **Imports**: Group standard library, third-party, then local packages.

@@ -100,8 +100,13 @@ func servePagedMedicaments(w http.ResponseWriter, r *http.Request) {
 
 func findMedicament(w http.ResponseWriter, r *http.Request) {
 	userPattern := chi.URLParam(r, "element")
-	if len(userPattern) < 2 {
-		respondWithError(w, 400, "Search term must be at least 2 characters")
+	if len(userPattern) < 3 {
+		respondWithError(w, 400, "Search term must be at least 3 characters")
+		return
+	}
+
+	if len(userPattern) > 50 || !regexp.MustCompile(`^[a-zA-Z0-9 ]+$`).MatchString(userPattern) {
+		respondWithError(w, 400, "Invalid search term: must be alphanumeric with spaces, max 50 chars")
 		return
 	}
 
@@ -144,8 +149,9 @@ func findMedicament(w http.ResponseWriter, r *http.Request) {
 
 func findMedicamentByID(w http.ResponseWriter, r *http.Request) {
 	cis, err := strconv.Atoi(chi.URLParam(r, "cis"))
-	if err != nil {
-		respondWithError(w, 400, "Invalid CIS number")
+
+	if err != nil || cis <= 0 || cis >= 1000000000 {
+		respondWithError(w, 400, "Invalid CIS: must be a positive integer less than 1.000.000.000")
 		return
 	}
 
@@ -167,8 +173,14 @@ func findMedicamentByID(w http.ResponseWriter, r *http.Request) {
 
 func findGeneriques(w http.ResponseWriter, r *http.Request) {
 	userPattern := chi.URLParam(r, "libelle")
-	if len(userPattern) < 2 {
-		respondWithError(w, 400, "Search term must be at least 2 characters")
+
+	if len(userPattern) < 3 {
+		respondWithError(w, 400, "Search term must be at least 3 characters")
+		return
+	}
+
+	if len(userPattern) > 50 || !regexp.MustCompile(`^[a-zA-Z0-9 ]+$`).MatchString(userPattern) {
+		respondWithError(w, 400, "Invalid search term: must be alphanumeric with spaces, max 50 chars")
 		return
 	}
 
@@ -199,13 +211,15 @@ func findGeneriques(w http.ResponseWriter, r *http.Request) {
 
 func findGeneriquesByGroupID(w http.ResponseWriter, r *http.Request) {
 	groupID, err := strconv.Atoi(chi.URLParam(r, "groupId"))
-	if err != nil {
-		respondWithError(w, 400, "Invalid group ID")
+
+	if err != nil || groupID <= 0 || groupID >= 100000 {
+		respondWithError(w, 400, "Invalid CIS: must be a positive integer less than 100.000")
 		return
 	}
 
 	generiquesMap := GetGeneriquesMap()
 	generique, exists := generiquesMap[groupID]
+
 	if !exists {
 		respondWithError(w, 404, "Generique group not found")
 		return
