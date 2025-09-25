@@ -23,7 +23,7 @@ var testMedicaments = []entities.Medicament{
 
 var testGeneriques = []entities.GeneriqueList{
 	{
-		GroupId: 100,
+		GroupID: 100,
 		Libelle: "Test Group",
 		Medicaments: []entities.GeneriqueMedicament{
 			{

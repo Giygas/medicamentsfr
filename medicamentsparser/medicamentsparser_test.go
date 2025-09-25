@@ -79,7 +79,7 @@ func TestGeneriquesParser(t *testing.T) {
 	// Verify the first generique
 	if len(generiques) > 0 {
 		fmt.Printf("First generique: GroupId=%d, Libelle=%s, Medicaments count=%d\n",
-			generiques[0].GroupId, generiques[0].Libelle, len(generiques[0].Medicaments))
+			generiques[0].GroupID, generiques[0].Libelle, len(generiques[0].Medicaments))
 	}
 
 	fmt.Println("TestGeneriquesParser completed")

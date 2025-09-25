@@ -212,8 +212,12 @@ func findGeneriques(w http.ResponseWriter, r *http.Request) {
 func findGeneriquesByGroupID(w http.ResponseWriter, r *http.Request) {
 	groupID, err := strconv.Atoi(chi.URLParam(r, "groupId"))
 
-	if err != nil || groupID <= 0 || groupID >= 100000 {
-		respondWithError(w, 400, "Invalid CIS: must be a positive integer less than 100.000")
+	if err != nil {
+		respondWithError(w, 400, "Invalid group ID: must be a positive integer")
+		return
+	}
+	if groupID <= 0 || groupID >= 100000 {
+		respondWithError(w, 404, "Invalid group ID: must be a positive integer less than 100000")
 		return
 	}
 

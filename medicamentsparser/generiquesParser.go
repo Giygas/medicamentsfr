@@ -45,7 +45,7 @@ func GeneriquesParser(medicaments *[]entities.Medicament, mMap *map[int]entities
 		}
 
 		current := entities.GeneriqueList{
-			GroupId:     groupInt,
+			GroupID:     groupInt,
 			Libelle:     generiquesMap[groupInt].Libelle,
 			Medicaments: getMedicamentsInArray(v, mMap),
 		}
