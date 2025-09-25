@@ -36,6 +36,10 @@
   `regexp.QuoteMeta`. JSON marshaling handles escaping automatically for API responses.
 - **Security Notes**: Focus on API security; no database interactions, so SQL
   injection is not a concern. Rate limiting and middleware protect against abuse.
+- **Rate Limiting**: Per-client rate limiting using token buckets. Fill rate:
+  10 tokens/second, capacity: 1000 tokens. Token costs: 200 for `/database`, 100
+  for `/medicament/`, 20 for others. Cleanup removes full buckets every 30 min to
+  prevent memory leaks.
 
 ## Code Style Guidelines
 

@@ -42,12 +42,11 @@ func (rl *RateLimiter) getBucket(clientIP string) *ratelimit.Bucket {
 
 // Clean up old clients periodically
 func (rl *RateLimiter) cleanup() {
-	ticker := time.NewTicker(1 * time.Hour)
+	ticker := time.NewTicker(30 * time.Minute)
 	go func() {
 		for range ticker.C {
 			rl.mu.Lock()
-			// Remove clients that haven't been used recently
-			// TODO: better cleanup
+			// Remove clients with full buckets
 			for ip, bucket := range rl.clients {
 				if bucket.Available() == bucket.Capacity() {
 					delete(rl.clients, ip)
@@ -90,18 +89,17 @@ func rateLimitHandler(h http.Handler) http.Handler {
 		// Calculate the token cost for the request
 		tokenCost := getTokenCost(r)
 
+		// Add rate limit headers before consuming tokens
+		w.Header().Set("X-RateLimit-Limit", "10")
+		w.Header().Set("X-RateLimit-Remaining", strconv.FormatInt(bucket.Available(), 10))
+
 		// Check if the client has enough tokens
 		if bucket.TakeAvailable(tokenCost) < tokenCost {
-			w.Header().Set("X-RateLimit-Limit", "30")
 			w.Header().Set("X-RateLimit-Remaining", "0")
 			w.Header().Set("Retry-After", "60")
 			http.Error(w, "Rate limit exceeded. Please try again later.", http.StatusTooManyRequests)
 			return
 		}
-
-		// Add rate limit headers
-		w.Header().Set("X-RateLimit-Limit", "30")
-		w.Header().Set("X-RateLimit-Remaining", strconv.FormatInt(bucket.Available(), 10))
 
 		// Serve the request
 		h.ServeHTTP(w, r)
