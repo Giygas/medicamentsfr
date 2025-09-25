@@ -29,10 +29,9 @@ func (rl *RateLimiter) getBucket(clientIP string) *ratelimit.Bucket {
 
 	if !exists {
 		rl.mu.Lock()
-		// Double-check pattern
 		if bucket, exists = rl.clients[clientIP]; !exists {
-			// Create bucket: 30 tokens per second, max 1000 tokens
-			bucket = ratelimit.NewBucketWithRate(30, 1000)
+			// Create bucket: 10 tokens per second, max 1000 tokens
+			bucket = ratelimit.NewBucketWithRate(10, 1000)
 			rl.clients[clientIP] = bucket
 		}
 		rl.mu.Unlock()
@@ -68,14 +67,9 @@ func init() {
 func getTokenCost(r *http.Request) int64 {
 	switch r.URL.Path {
 	case "/database":
-		return 500 // Higher cost for full database
-
-	// TODO: better bucket costs
-
-	// case "/database/":
-	// 	return 100 // Medium cost for paged results
-	// case "/medicament/":
-	// 	return 50 // Medium cost for search
+		return 200 // Higher cost for full database
+	case "/medicament/":
+		return 100
 	default:
 		return 20 // Default cost for specific lookups
 	}
@@ -89,12 +83,7 @@ func rateLimitHandler(h http.Handler) http.Handler {
 			return
 		}
 
-		// Get client IP (consider X-Forwarded-For if behind proxy)
-		// TODO: ask if this is good if behind nginx server
 		clientIP := r.RemoteAddr
-		if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
-			clientIP = forwarded
-		}
 
 		bucket := globalRateLimiter.getBucket(clientIP)
 
