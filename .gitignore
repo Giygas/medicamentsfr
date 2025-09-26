@@ -8,6 +8,6 @@ src/
 src/*
 .env
 .DS_Store
-medicamentsfr
+/medicamentsfr
 medicamentsparser/files
 medicamentsparser/src
